@@ -4,12 +4,27 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 from Crypto.Random import get_random_bytes
 import base64
+from hashlib import md5
+
+
+def bytes_to_key(data: str, output: int = 32) -> bytes:
+    data = data.encode(encoding='utf-8')
+    key = md5(data).digest()
+    final_key = key
+    while len(final_key) < output:
+        key = md5(key + data).digest()
+        final_key += key
+    return final_key[:output]
 
 
 # 加密
-def encode(data: bytes, key: str, iv: str) -> bytes:
-    key = key.encode('utf-8')
-    iv = iv.encode('utf-8')
+def encode(data: bytes, key: str, iv: str = None) -> bytes:
+    key = bytes_to_key(key)
+    if iv is None:
+        iv = key[16:]
+    else:
+        iv = iv.encode('utf-8')
+    key = key[:16]
     cipher = AES.new(key, AES.MODE_CBC, iv)
 
     # 加密
@@ -19,9 +34,13 @@ def encode(data: bytes, key: str, iv: str) -> bytes:
 
 
 # 解密
-def decode(encrypted_data: bytes, key: str, iv=str) -> bytes:
-    key = key.encode('utf-8')
-    iv = iv.encode('utf-8')
+def decode(encrypted_data: bytes, key: str, iv: str = None) -> bytes:
+    key = bytes_to_key(key)
+    if iv is None:
+        iv = key[16:]
+    else:
+        iv = iv.encode('utf-8')
+    key = key[:16]
     cipher = AES.new(key, AES.MODE_CBC, iv)
 
     # 解密
@@ -46,23 +65,30 @@ class Serial:
 
     def get_serial(self, key):
         """
-        生成一个上传文件所需要的序列号,该序列号与文件一同上传,序列号中包含时间,用于判断序列号是否过期,
+
         :return:
         """
         t = str(int(time.time()))
-        ran = "{0:0>5}".format(np.random.randint(0, 99999, 1)[0])
-        ser = t + ran
-        en_ser = encode(ser.encode("utf-8"), self.creat_serial_key, self.iv)
-        en_ser = encode(en_ser, key, self.iv)
+        file_id = "{0:0>8}".format(np.random.randint(0, 99999999, 1)[0])  # 前4位作为文件id
+        ser = t + file_id
+        print(ser)
+        en_ser = encode(ser.encode("utf-8"), self.creat_serial_key)
+        en_ser = encode(en_ser, key)
 
-        print(en_ser.decode("utf-8"))
+        print("en", en_ser.decode("utf-8"))
         return en_ser.decode("utf-8")
 
-    def use_serial(self):
-        pass
+    def use_serial(self, en_ser: str, key: str):
+        en_ser = en_ser.encode("utf-8")
+        data = decode(en_ser, key)
+        data = decode(data, self.creat_serial_key)
+        print("de", data)
+
 
 if __name__ == '__main__':
     # print(get_random_string(16))
     s = Serial()
     for i in range(5):
-        s.get_serial("xco2")
+        en_ser = s.get_serial("xco2")
+        s.use_serial(en_ser, "xco2")
+        print()
