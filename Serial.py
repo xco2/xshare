@@ -19,6 +19,7 @@ def time_it(f):
     return fun
 
 
+# 通过不定长密码生成定长密码
 def bytes_to_key(data: str, salt: bytes, output: int = 32) -> bytes:
     data = data.encode(encoding='utf-8')
     assert len(salt) == 8, len(salt)
@@ -75,7 +76,7 @@ class Serial:
         self.creat_serial_key = "MZ9pxk7Zy7gK7HGS"
 
     # 生成上传码,加密前,10位为时间,3位有效时间,5位文件id,加密后,最前面是授权者昵称
-    def get_serial(self, key: str, v_t: int) -> [str, None]:
+    def create_serial(self, key: str, v_t: int) -> [str, None]:
         """
         生成上传码,加密前,10位为时间,3位有效时间,5位文件id,加密后,最前面是授权者昵称
         :param key: 密码
@@ -103,7 +104,7 @@ class Serial:
         return en_ser
 
     # 验证上传码
-    def use_serial(self, en_ser: str) -> [int, None]:
+    def check_serial(self, en_ser: str) -> [int, None]:
         """
         验证上传码
         :param en_ser:上传码
@@ -134,12 +135,15 @@ class Serial:
         else:
             return file_id
 
+    # 验证通过后,把文件id与授权者的映射存入数据库,保存的文件由文件id+时间戳命名,
+    # 文件保存一段时间后删除,若没有已文件id开头的文件了,就删除数据库中的映射
+
 
 if __name__ == '__main__':
     s = Serial()
     for i in range(3):
-        en_ser = s.get_serial("qwer", 2)
+        en_ser = s.create_serial("qwer", 2)
         print(len(en_ser), en_ser)
-        file_id = s.use_serial(en_ser)
+        file_id = s.check_serial(en_ser)
         print("file_id", file_id)
         print()
