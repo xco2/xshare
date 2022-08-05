@@ -80,9 +80,10 @@ class Serial:
         """
         生成上传码,加密前,10位为时间,3位有效时间,5位文件id,加密后,最前面是授权者昵称
         :param key: 密码
-        :param v_t: 有效时间,3位数,小时为单位
+        :param v_t: 有效时间,3位数,第一位为模式,0代表分钟为单位,1代表小时为单位,2代表天为单位,其余一律按秒算
         :return:
         """
+        assert v_t > 0
         if key not in self.keys:
             # 如果没有记录这个密码证明没有权限,随机生成一个用户名,反正也解不出来
             user = get_random_string(random.randint(3, 67))
@@ -126,7 +127,15 @@ class Serial:
 
         # 切割
         t = int(data[:10])
-        v_t = int(data[10:13]) * 3600  # 转换为秒
+        v_t = data[10:13]  # 有效时间,3位数,第一位为模式,0代表分钟为单位,1代表小时为单位,2代表天为单位,其余一律按秒算
+        if v_t[0] == 0:  # 分钟
+            v_t = int(v_t[1:]) * 60
+        elif v_t[0] == 1:  # 小时
+            v_t = int(v_t[1:]) * 3600
+        elif v_t[0] == 2:  # 天
+            v_t = int(v_t[1:]) * 3600 * 24
+        else:  # 其余一律按秒算
+            v_t = int(v_t[1:])
         file_id = int(data[13:])
         print("de", data)
         # 判断是否超时
@@ -144,6 +153,7 @@ if __name__ == '__main__':
     for i in range(3):
         en_ser = s.create_serial("qwer", 2)
         print(len(en_ser), en_ser)
+        time.sleep(2)
         file_id = s.check_serial(en_ser)
         print("file_id", file_id)
         print()
