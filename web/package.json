@@ -12,8 +12,7 @@
     "lint:eslint": "eslint --cache --max-warnings 0  \"{src,mock}/**/*.{vue,ts,tsx}\" --fix",
     "lint:prettier": "prettier --write  \"src/**/*.{js,json,tsx,css,less,scss,vue,html,md}\"",
     "lint:stylelint": "stylelint --cache --fix \"**/*.{vue,less,postcss,css,scss}\" postcss-html --cache --cache-location node_modules/.cache/stylelint/",
-    "lint:lint-staged": "lint-staged -c ./.husky/lintstagedrc.js",
-    "prepare": "husky install "
+    "lint:lint-staged": "lint-staged -c ./.husky/lintstagedrc.js"
   },
   "dependencies": {
     "@types/watermark-dom": "^2.3.1",
@@ -21,6 +20,7 @@
     "@vueuse/core": "^7.5.3",
     "@vueuse/head": "^0.7.4",
     "@vueuse/integrations": "^7.1.2",
+    "ant-design-vue": "^3.2.11",
     "axios": "^0.24.0",
     "dayjs": "^1.10.7",
     "less": "^4.1.2",
@@ -58,11 +58,11 @@
     "postcss-html": "^1.2.0",
     "postcss-less": "^5.0.0",
     "prettier": "^2.4.1",
+    "stylelint": "^13.13.1",
     "stylelint-config-prettier": "^9.0.3",
     "stylelint-config-rational-order": "^0.1.2",
-    "stylelint-order": "^5.0.0",
-    "stylelint": "^13.13.1",
     "stylelint-config-standard": "^22.0.0",
+    "stylelint-order": "^5.0.0",
     "stylelint-scss": "^3.21.0",
     "tailwindcss": "^3.0.16",
     "typescript": "^4.4.3",
