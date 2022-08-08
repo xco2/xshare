@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, session, jsonify
+from flask import Flask, request, render_template, session, jsonify, Response
 from Serial import Serial, encode, decode
 import cv2
 import time, os, json
@@ -11,6 +11,15 @@ upload_encrypted_files_save_path = "./encryptedFiles"
 app = Flask(__name__, static_folder=upload_files_save_path)
 app.config['SECRET_KEY'] = os.urandom(24)
 serial_home = Serial()
+
+
+@app.route("/", methods=['GET', 'POST'])
+def index():
+    # session['username'] = 'xco2'
+    # session['username']
+    # session.get('username')
+    # name = session.get('username')
+    render_template('upload.html')
 
 
 # 获取上传码
@@ -52,14 +61,7 @@ def check_serial():
         return jsonify({"code": -1, "msg": "错误上传码"})
 
 
-@app.route("/", methods=['GET', 'POST'])
-def index():
-    # session['username'] = 'xco2'
-    # session['username']
-    # session.get('username')
-    # name = session.get('username')
-    render_template('upload.html')
-
+# ====================================================
 
 # 上传文件,无加密
 @app.route("/upload", methods=["POST"])
@@ -125,6 +127,8 @@ def upload_encrypt():
         return jsonify({"code": 1, "msg": "文件上传成功"})
 
 
+# ====================================================
+
 # 获取文件列表
 @app.route("/files", methods=["GET", "POST"])
 def getfiles():
@@ -140,9 +144,31 @@ def getfiles():
 def getfiles():
     files = ""
     for root, dirs, files in os.walk(upload_files_save_path):
-        files.append("<a href='{0}/decrypt?file_name={1}'>{1}</a>\n".format(server_ip_port, files))
+        files.append(
+            """<form action='/decrypt' method='post'>
+            <input type='text' name='file' value='{0}'>
+            <input type='text' name='key'>
+            <input type='submit'>
+            </form>\n""".format(files))
 
     return files
+
+
+# ====================================================
+# 解密文件
+@app.route("/decrypt", methods=["POST"])
+def decrypt_file():
+    file = request.form.get("file")
+    key = request.form.get("key")
+
+    with open(os.path.join(upload_encrypted_files_save_path, file), "rb") as f:
+        file_bytes = f.read()
+        try:
+            file_bytes = decode(file_bytes, key)
+        except:
+            return jsonify({"code": -1, "msg": "密码有误"})
+
+        return Response(file_bytes)
 
 
 if __name__ == '__main__':
