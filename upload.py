@@ -1,14 +1,16 @@
 from flask import Flask, request, render_template, session, jsonify
-from Serial import Serial
+from Serial import Serial, encode, decode
 import cv2
 import time, os, json
 from loguru import logger
 
-upload_filee_save_path = "./uploadFiles"
+server_ip_port = "127.0.0.1:3000"
+upload_files_save_path = "./uploadFiles"
+upload_encrypted_files_save_path = "./encryptedFiles"
 
-app = Flask(__name__, static_folder=upload_filee_save_path)
+app = Flask(__name__, static_folder=upload_files_save_path)
 app.config['SECRET_KEY'] = os.urandom(24)
-serial_home: Serial = Serial()
+serial_home = Serial()
 
 
 # 获取上传码
@@ -56,17 +58,17 @@ def index():
     # session['username']
     # session.get('username')
     # name = session.get('username')
-    return "1"
+    render_template('upload.html')
 
 
-# 上传不需要加密的文件
+# 上传文件,无加密
 @app.route("/upload", methods=["POST"])
 def upload():
     """
     接受前端传送过来的文件,不需要加密
     :return:
     """
-    global upload_filee_save_path
+    global upload_files_save_path
     file_id = session.get('username')
     if file_id is None:
         return jsonify({"code": -1, "msg": "未输入上传码"})
@@ -78,17 +80,74 @@ def upload():
 
         file_bytes = file_obj.read()
         logger.info("文件大小{0}KB".format(len(file_bytes) / 8 / 1024))
+        if len(file_bytes) > 100 * 1024 * 1024 * 8:  # 文件大小限制,100MB
+            return jsonify({"code": -1, "msg": "文件过于100MB"})
+
         file_type = file_obj.filename.split(".")[-1]
         file_name = str(file_id) + "_" + str(time.time()) + "." + file_type
-        with open(os.path.join(upload_filee_save_path, file_name), "wb") as f:
+        with open(os.path.join(upload_files_save_path, file_name), "wb") as f:
             f.write(file_bytes)
 
         return jsonify({"code": 1, "msg": "文件上传成功"})
 
 
+# 上传文件,加密
+@app.route("/uploadEncrypt", methods=["POST"])
+def upload_encrypt():
+    """
+    接受前端传送过来的文件,加密
+    :return:
+    """
+    global upload_files_save_path
+    file_id = session.get('username')
+    if file_id is None:
+        return jsonify({"code": -1, "msg": "未输入上传码"})
+    else:
+        # 获取上传的文件
+        file_obj = request.files.get("test_file")
+        if file_obj is None:
+            return jsonify({"code": -1, "msg": "文件上传为空"})
+
+        file_bytes = file_obj.read()
+        logger.info("文件大小{0}KB".format(len(file_bytes) / 8 / 1024))
+        if len(file_bytes) > 30 * 1024 * 1024 * 8:  # 文件大小限制,30MB
+            return jsonify({"code": -1, "msg": "文件过于30MB"})
+
+        # 加密
+        key = request.form.get("key")
+        file_bytes = encode(file_bytes, key)
+
+        file_type = file_obj.filename.split(".")[-1]
+        file_name = str(file_id) + "_" + str(time.time()) + "." + file_type
+        with open(os.path.join(upload_encrypted_files_save_path, file_name), "wb") as f:
+            f.write(file_bytes)
+
+        return jsonify({"code": 1, "msg": "文件上传成功"})
+
+
+# 获取文件列表
+@app.route("/files", methods=["GET", "POST"])
+def getfiles():
+    files = ""
+    for root, dirs, files in os.walk(upload_files_save_path):
+        files.append("<a href='{0}'>{0}</a>\n".format(files))
+
+    return files
+
+
+# 获取加密文件列表
+@app.route("/filesEncrypted", methods=["GET", "POST"])
+def getfiles():
+    files = ""
+    for root, dirs, files in os.walk(upload_files_save_path):
+        files.append("<a href='{0}/decrypt?file_name={1}'>{1}</a>\n".format(server_ip_port, files))
+
+    return files
+
 
 if __name__ == '__main__':
-
-    if not os.path.exists(upload_filee_save_path):
-        os.mkdir(upload_filee_save_path)
+    if not os.path.exists(upload_files_save_path):
+        os.mkdir(upload_files_save_path)
+    if not os.path.exists(upload_encrypted_files_save_path):
+        os.mkdir(upload_encrypted_files_save_path)
     app.run(host="127.0.0.1", port=3000, debug=True)
