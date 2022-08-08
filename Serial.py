@@ -7,6 +7,7 @@ from Crypto.Util.Padding import pad, unpad
 from Crypto.Random import get_random_bytes
 import base64
 from hashlib import md5
+from typing import Tuple
 
 
 def time_it(f):
@@ -84,7 +85,7 @@ class Serial:
         :return:
         """
         assert v_t > 0
-        if key not in self.keys:
+        if key is None or key not in self.keys:
             # 如果没有记录这个密码证明没有权限,随机生成一个用户名,反正也解不出来
             user = get_random_string(random.randint(3, 67))
         else:
@@ -105,7 +106,7 @@ class Serial:
         return en_ser
 
     # 验证上传码
-    def check_serial(self, en_ser: str) -> [int, None]:
+    def check_serial(self, en_ser: str) -> Tuple:
         """
         验证上传码
         :param en_ser:上传码
@@ -116,7 +117,7 @@ class Serial:
         user, en_ser = en_ser.split("_")
         user = user.split("-")[-1]
         if user not in self.users:
-            return None
+            return None, None
         key = self.keys[self.users.index(user)]
 
         # 解密
@@ -140,9 +141,9 @@ class Serial:
         print("de", data)
         # 判断是否超时
         if time.time() > t + v_t:
-            return -1
+            return -1, user
         else:
-            return file_id
+            return file_id, user
 
     # 验证通过后,把文件id与授权者的映射存入数据库,保存的文件由文件id+时间戳命名,
     # 文件保存一段时间后删除,若没有已文件id开头的文件了,就删除数据库中的映射
