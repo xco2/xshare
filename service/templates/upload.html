@@ -5,8 +5,34 @@
     <title>Title</title>
 </head>
 <body>
-<form action="/upload" method="post"  enctype="multipart/form-data">
-    <input type="file" name="test_file">
+获取上传码
+<form action="/createSerial" method="post">
+    key<input type="text" name="key"><br>
+    有效时间,3位数,第一位为模式,0代表分钟为单位,1代表小时为单位,2代表天为单位,其余一律按秒算<br>
+    有效时间<input type="text" name="v_t">
+    <input type="submit">
+</form>
+<br>
+<br>
+<br>
+
+<a href="/files">查看文件列表</a>
+<br>
+<br>
+<br>
+
+验证上传码
+<form action="/checkSerial" method="post">
+    <input type="text" name="serial">
+    <input type="submit">
+</form>
+<br>
+<br>
+<br>
+
+上传
+<form action="/upload" method="post" enctype="multipart/form-data">
+    <input type="file" name="upload_file">
     <input type="submit">
 </form>
 

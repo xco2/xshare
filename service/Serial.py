@@ -110,7 +110,8 @@ class Serial:
         """
         验证上传码
         :param en_ser:上传码
-        :return: 不存在返回None
+        :return: (file_id,user)
+                 file_id不存在返回None
                  超时返回-1
                  合法返回文件id
         """
