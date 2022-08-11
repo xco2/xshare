@@ -5,6 +5,7 @@ import cv2
 import time, os, json
 from loguru import logger
 
+# 43.138.187.142
 server_ip = "0.0.0.0"
 port = 13000
 upload_files_save_path = "./uploadFiles"
