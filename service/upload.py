@@ -1,17 +1,43 @@
 from flask import Flask, request, render_template, session, jsonify, Response
+from flask_apscheduler import APScheduler
 from Serial import Serial, encode, decode
 import cv2
 import time, os, json
 from loguru import logger
 
-server_ip_port = "127.0.0.1:3000"
+server_ip = "0.0.0.0"
+port = 13000
 upload_files_save_path = "./uploadFiles"
 upload_encrypted_files_save_path = "./encryptedFiles"
 
+# flask
 app = Flask(__name__, static_folder=upload_files_save_path)
 app.config['SECRET_KEY'] = os.urandom(24)
+
+# 定时任务
+scheduler = APScheduler()
+
+# 加解密模块
 serial_home = Serial()
 
+
+@scheduler.task('cron', id='clean_files', day='*', hour='4', minute='00', second='00')
+def clean_files():
+    now_time = time.time()
+
+    # 无加密文件,加密文件
+    for save_path in [upload_files_save_path, upload_encrypted_files_save_path]:
+        for root, dirs, files in os.walk(save_path):
+            for f in files:
+                f_time = int(f.split("_")[1].split(".")[0])
+                # 超过3天删除
+                if now_time - f_time >= 3 * 24 * 60 * 60:
+                    file_path = os.path.join(save_path, f)
+                    os.remove(file_path)
+                    logger.info("删除{0}".format(file_path))
+
+
+# =======================上传码======================
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
@@ -61,21 +87,21 @@ def check_serial():
         logger.info(file_id)
         if file_id is None:
             # return jsonify({"code": -1, "msg": "错误上传码"})
-            return "错误上传码"
+            return "错误上传码,<a href='/'>返回</a>"
         elif file_id == -1:
             # return jsonify({"code": 0, "msg": "上传码已过期"})
-            return "上传码已过期"
+            return "上传码已过期,<a href='/'>返回</a>"
         else:
             # TODO: 添加授权者与file_id的映射到数据库
             session['file_id'] = file_id
             # return jsonify({"code": 1, "msg": "通过验证"})
-            return "通过验证"
+            return "通过验证,<a href='/'>返回</a>"
     else:
         # return jsonify({"code": -1, "msg": "错误上传码"})
-        return "错误上传码"
+        return "错误上传码,<a href='/'>返回</a>"
 
 
-# ====================================================
+# =======================上传文件======================
 
 # 上传文件,无加密
 @app.route("/upload", methods=["POST"])
@@ -89,26 +115,26 @@ def upload():
     logger.info(file_id)
     if file_id is None:
         # return jsonify({"code": -1, "msg": "未输入上传码"})
-        return "未输入上传码"
+        return "未输入上传码,<a href='/'>返回</a>"
     else:
         # 获取上传的文件
         file_obj = request.files.get("upload_file")
         if file_obj is None:
             # return jsonify({"code": -1, "msg": "文件上传为空"})
-            return "文件上传为空"
+            return "文件上传为空,<a href='/'>返回</a>"
 
         file_bytes = file_obj.read()
         logger.info("文件大小{0}KB".format(len(file_bytes) / 8 / 1024))
         if len(file_bytes) > 100 * 1024 * 1024 * 8:  # 文件大小限制,100MB
             # return jsonify({"code": -1, "msg": "文件过于100MB"})
-            return "文件过于100MB"
+            return "文件过于100MB,<a href='/'>返回</a>"
 
         file_type = file_obj.filename.split(".")[-1]
-        file_name = str(file_id) + "_" + str(time.time()) + "." + file_type
+        file_name = str(file_id) + "_" + str(int(time.time())) + "." + file_type
         with open(os.path.join(upload_files_save_path, file_name), "wb") as f:
             f.write(file_bytes)
 
-        return "文件上传成功"
+        return "文件上传成功,<a href='/'>返回</a>"
 
 
 # 上传文件,加密
@@ -138,14 +164,14 @@ def upload_encrypt():
         file_bytes = encode(file_bytes, key)
 
         file_type = file_obj.filename.split(".")[-1]
-        file_name = str(file_id) + "_" + str(time.time()) + "." + file_type
+        file_name = str(file_id) + "_" + str(int(time.time())) + "." + file_type
         with open(os.path.join(upload_encrypted_files_save_path, file_name), "wb") as f:
             f.write(file_bytes)
 
         return jsonify({"code": 1, "msg": "文件上传成功"})
 
 
-# ====================================================
+# ======================获取文件列表======================
 
 # 获取文件列表
 @app.route("/files", methods=["GET", "POST"])
@@ -153,9 +179,9 @@ def get_files():
     res = ""
     for root, dirs, files in os.walk(upload_files_save_path):
         for f in files:
-            res += "<a href='/{0}/{1}'>{1}</a>\n".format(upload_files_save_path.split("/")[-1], f)
+            res += "<a href='/{0}/{1}'>{1}</a><br>".format(upload_files_save_path.split("/")[-1], f)
     print(res)
-    return res
+    return res + "<br><a href='/'>返回</a>"
 
 
 # 获取加密文件列表
@@ -173,7 +199,7 @@ def get_encrypted_files():
     return files
 
 
-# ====================================================
+# =======================解密文件=====================
 # 解密文件
 @app.route("/decrypt", methods=["POST"])
 def decrypt_file():
@@ -195,4 +221,7 @@ if __name__ == '__main__':
         os.mkdir(upload_files_save_path)
     if not os.path.exists(upload_encrypted_files_save_path):
         os.mkdir(upload_encrypted_files_save_path)
-    app.run(host="127.0.0.1", port=3000, debug=True)
+
+    scheduler.init_app(app)
+    scheduler.start()
+    app.run(host=server_ip, port=port, debug=False)
