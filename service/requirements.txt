@@ -1,0 +1,14 @@
+Flask==1.1.2
+Flask-APScheduler==1.12.4
+Flask-Script==2.0.6
+Flask-SocketIO==3.0.2
+loguru==0.6.0
+numpy==1.18.5
+opencv-python==4.5.5.64
+pandas==1.1.5
+Pillow==8.4.0
+plotly==5.7.0
+plotly-express==0.4.1
+PyMySQL==1.0.2
+python-engineio==3.13.2
+python-socketio==4.6.0
