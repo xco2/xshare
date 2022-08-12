@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <div style="overflow: scroll; height: calc(100vh - 48px)">
+    <div style="overflow: scroll">
       <router-view v-slot="{ Component }">
         <keep-alive>
           <component :is="Component" />
