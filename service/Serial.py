@@ -74,7 +74,7 @@ def get_random_string(size):
 class Serial:
     def __init__(self):
         self.users = ["xco2"]
-        self.keys = ["qwer"]
+        self.keys = ["qwerfghj"]
         self.creat_serial_key = "MZ9pxk7Zy7gK7HGS"
 
     # 生成上传码,加密前,10位为时间,3位有效时间,5位文件id,加密后,最前面是授权者昵称

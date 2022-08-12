@@ -180,7 +180,12 @@ def get_files():
     res = ""
     for root, dirs, files in os.walk(upload_files_save_path):
         for f in files:
-            res += "<a href='/{0}/{1}'>{1}</a><br>".format(upload_files_save_path.split("/")[-1], f)
+            f_type = f.split(".")[-1]
+            if f_type in ["png", "jpg", "jpeg"]:
+                res += "<a href='/{0}/{1}'><img src='/{0}/{1}' height='200'></a><br>".format(
+                    upload_files_save_path.split("/")[-1], f)
+            else:
+                res += "<a href='/{0}/{1}'>{1}</a><br>".format(upload_files_save_path.split("/")[-1], f)
     print(res)
     return res + "<br><a href='/'>返回</a>"
 
