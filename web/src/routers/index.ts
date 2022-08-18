@@ -15,6 +15,11 @@ const routers = createRouter({
       component: () => import('@/views/Home/index.vue'),
     },
     {
+      name: 'demo',
+      path: '/demo',
+      component: () => import('@/views/demo/demo.vue'),
+    },
+    {
       name: 'verification',
       path: '/permission/verification',
       component: () => import('@/views/permission/Verification.vue'),

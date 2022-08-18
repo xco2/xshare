@@ -30,6 +30,7 @@
     "vite-plugin-compression": "^0.4.0",
     "vite-plugin-style-import": "^1.4.0",
     "vue": "^3.2.26",
+    "vue-hooks-plus": "^1.0.9",
     "vue-router": "4",
     "vue3-hooks-plus": "^2.4.1",
     "vuex": "^4.0.2"

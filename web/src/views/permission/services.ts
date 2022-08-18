@@ -1,0 +1,15 @@
+// 验证上传码
+
+import { request } from '@/network/axios'
+export async function validateUploadCode(code: string) {
+  return request<{
+    path: string
+    code: string
+  }>('url', {
+    params: {
+      code,
+    },
+    // headers
+    //... 其他配置如请求头等
+  })
+}
