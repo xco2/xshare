@@ -15,15 +15,24 @@
       onOpen: (e: any) => {
         console.log(e)
       },
+      onClose: (e) => {
+        console.log(e)
+      },
+      onMessage: (msg) => {
+        console.log(msg)
+      },
+      // reconnectInterval 重试时间间隔
+      // reconnectLimit 重试次数
+      // protocols 额外的协议头
     },
   )
 
   watchEffect(() => {
-    // console.log(latestMessage?.value)
-    if (latestMessage?.value) {
-      messageHistory.value.push(latestMessage?.value)
-      disconnect?.()
-    }
+    console.log(latestMessage?.value)
+    // if (latestMessage?.value) {
+    //   messageHistory.value.push(latestMessage?.value)
+    //   disconnect?.()
+    // }
   })
   // const messageHistoryCompute = computed(() => messageHistory.value.concat(latestMessage?.value))
 </script>
