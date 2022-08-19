@@ -6,6 +6,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AButton: typeof import('ant-design-vue/es')['Button']
     AInputPassword: typeof import('ant-design-vue/es')['InputPassword']
+    WaterMark: typeof import('./components/common/WaterMark.vue')['default']
   }
 }
 
