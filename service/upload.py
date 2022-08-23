@@ -66,7 +66,8 @@ def serial_creater():
             # return jsonify({"code": -1, "msg": "有效时间错误"})
             return "有效时间错误"
 
-        serial = serial_home.create_serial(key, v_t)
+        serial, file_id = serial_home.create_serial(key, v_t)
+        session['file_id'] = file_id
         # return jsonify({"code": 1, "serial": serial})
         return serial
     else:
@@ -135,7 +136,7 @@ def upload():
         with open(os.path.join(upload_files_save_path, file_name), "wb") as f:
             f.write(file_bytes)
 
-        return "文件上传成功,<a href='/'>返回</a>"
+        return "文件上传成功{0},<a href='/'>返回</a>".format(file_id)
 
 
 # 上传文件,加密

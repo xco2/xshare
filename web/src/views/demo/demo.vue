@@ -38,7 +38,9 @@
 
   onMounted(() => {
     console.log("123123")
-    const socket = io('ws://192.168.3.11:13000/echo',{transports: ['websocket']})
+    const socket = io('ws://43.138.187.142:13000/echo',{
+                              transports: ['websocket'],
+                          })
     socket.on('testemit', (message) => {
       console.log("testemit")
       console.log(message)

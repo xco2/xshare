@@ -14,7 +14,7 @@ name_space = '/echo'
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return "123"
 
 
 @app.route('/push')
@@ -36,7 +36,7 @@ def disconnect_msg():
     print('client disconnected.')
 
 
-@socketio.on('my_event', namespace=name_space)
+# @socketio.on('my_event', namespace=name_space)
 def mtest_message(message):
     print(message)
     emit('my_response', {'data': message['data'], 'count': 1})

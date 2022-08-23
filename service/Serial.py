@@ -104,7 +104,7 @@ class Serial:
         en_ser = "{0:->6}".format(user) + "_" + en_ser.decode("utf-8")
 
         logger.info("加密后{0}".format(en_ser))
-        return en_ser
+        return en_ser,file_id
 
     # 验证上传码
     def check_serial(self, en_ser: str) -> Tuple:
