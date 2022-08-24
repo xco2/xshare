@@ -75,7 +75,7 @@ class Serial:
     def __init__(self):
         self.users = ["xco2"]
         self.keys = ["qwerfghj"]
-        self.creat_serial_key = "MZ9pxk7Zy7gK7HGS"
+        self.creat_serial_key = get_random_string(16)
 
     # 生成上传码,加密前,10位为时间,3位有效时间,5位文件id,加密后,最前面是授权者昵称
     def create_serial(self, key: str, v_t: int) -> [str, None]:
@@ -104,7 +104,7 @@ class Serial:
         en_ser = "{0:->6}".format(user) + "_" + en_ser.decode("utf-8")
 
         logger.info("加密后{0}".format(en_ser))
-        return en_ser,file_id
+        return en_ser, file_id
 
     # 验证上传码
     def check_serial(self, en_ser: str) -> Tuple:
