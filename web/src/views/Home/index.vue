@@ -11,8 +11,8 @@
 </script>
 
 <script lang="ts" setup>
-  import { useHomeStore } from '@/store/modules/home'
-  import { storeToRefs } from 'pinia'
+  // import { useHomeStore } from '@/store/modules/home'
+  // import { storeToRefs } from 'pinia'
   import Hearder from './Hearder.vue'
 
   const title = ref(`Welcome XShare 🌟`)
@@ -33,12 +33,12 @@
   /**
    * 使用pinia状态管理
    */
-  const store = useHomeStore()
-  const storeTitle = computed(() => store.getFuncTitle)
-  // 保持响应式
-  const { count } = storeToRefs(store)
+  // const store = useHomeStore()
+  // const storeTitle = computed(() => store.getFuncTitle)
+  // // 保持响应式
+  // const { count } = storeToRefs(store)
 
-  const newCount = computed(() => `state ${count.value}`)
+  // // const newCount = computed(() => `state ${count.value}`)
   // store.$patch({ count: store.count + 10 });
   // store.incrementPromise();
 </script>
