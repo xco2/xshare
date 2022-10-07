@@ -1,8 +1,10 @@
+import numpy as np
 from flask import Flask, request, render_template, session, jsonify, Response
 from flask_apscheduler import APScheduler
 from Serial import Serial, encode, decode
 import cv2
 import time, os, json
+from PIL import Image
 from loguru import logger
 
 # 43.138.187.142
@@ -66,7 +68,8 @@ def serial_creater():
             # return jsonify({"code": -1, "msg": "有效时间错误"})
             return "有效时间错误"
 
-        serial = serial_home.create_serial(key, v_t)
+        serial, file_id = serial_home.create_serial(key, v_t)
+        session['file_id'] = file_id
         # return jsonify({"code": 1, "serial": serial})
         return serial
     else:
@@ -84,8 +87,12 @@ def check_serial():
         # logger.info(json_data)
         # serial = json_data["serial"]
         serial = request.form['serial']
+        if serial is None:
+            return "错误上传码,<a href='/'>返回</a>"
+
         file_id, user = serial_home.check_serial(serial)
         logger.info(file_id)
+
         if file_id is None:
             # return jsonify({"code": -1, "msg": "错误上传码"})
             return "错误上传码,<a href='/'>返回</a>"
@@ -96,13 +103,29 @@ def check_serial():
             # TODO: 添加授权者与file_id的映射到数据库
             session['file_id'] = file_id
             # return jsonify({"code": 1, "msg": "通过验证"})
-            return "通过验证,<a href='/'>返回</a>"
+            return "<script>window.location = '/'</script>"
     else:
         # return jsonify({"code": -1, "msg": "错误上传码"})
         return "错误上传码,<a href='/'>返回</a>"
 
 
 # =======================上传文件======================
+# 生成压缩图
+def create_litter_img(img_path: str, shape=80):
+    img = Image.open(img_path)
+    w, h = img.size
+    wph = w / h
+    if w > h:
+        w = shape
+        h = int(w / wph)
+    else:
+        h = shape
+        w = int(wph * h)
+    img = img.resize((w, h))
+    img_name = os.path.split(img_path)[-1]
+    img_dir = img_path.replace(img_name, "")
+    img.save(os.path.join(img_dir, "s" + img_name))
+
 
 # 上传文件,无加密
 @app.route("/upload", methods=["POST"])
@@ -132,10 +155,11 @@ def upload():
 
         file_type = file_obj.filename.split(".")[-1]
         file_name = str(file_id) + "_" + str(int(time.time())) + "." + file_type
-        with open(os.path.join(upload_files_save_path, file_name), "wb") as f:
+        file_name = os.path.join(upload_files_save_path, file_name)
+        with open(file_name, "wb") as f:
             f.write(file_bytes)
-
-        return "文件上传成功,<a href='/'>返回</a>"
+        create_litter_img(file_name)
+        return "文件上传成功{0},<a href='/'>返回</a>".format(file_id)
 
 
 # 上传文件,加密
@@ -180,13 +204,14 @@ def get_files():
     res = ""
     for root, dirs, files in os.walk(upload_files_save_path):
         for f in files:
+            if f[0] == "s":
+                continue
             f_type = f.split(".")[-1]
             if f_type in ["png", "jpg", "jpeg"]:
-                res += "<a href='/{0}/{1}'><img src='/{0}/{1}' height='200'></a><br>".format(
+                res += "<a href='/{0}/{1}'><img src='/{0}/s{1}'></a><br>".format(
                     upload_files_save_path.split("/")[-1], f)
             else:
                 res += "<a href='/{0}/{1}'>{1}</a><br>".format(upload_files_save_path.split("/")[-1], f)
-    print(res)
     return res + "<br><a href='/'>返回</a>"
 
 

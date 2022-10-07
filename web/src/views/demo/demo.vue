@@ -37,13 +37,25 @@
   // const messageHistoryCompute = computed(() => messageHistory.value.concat(latestMessage?.value))
 
   onMounted(() => {
-    const socket = io('ws://xxx')
-    socket.on('chartData', (message) => {
+    console.log("123123")
+    const socket = io('ws://43.138.187.142:13000/echo',{
+                              transports: ['websocket'],
+                          })
+    socket.on('testemit', (message) => {
+      console.log("testemit")
       console.log(message)
-      const messageData = JSON.parse(message)
-      console.log(messageData)
+      //const messageData = JSON.parse(message)
+      //console.log(messageData)
     })
+    socket.on('connect_error', e => {
+      console.log('connect_error', e);
+    });
+    console.log(socket.connected); // socket是否与服务器连接
+    console.log("123456")
+
   })
+
+
 </script>
 
 <style scoped lang="less"></style>
