@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts" setup>
-  import io from 'socket.io-client'
+  import io from 'socket.io'
   // demo
 
   // import useWebSocket from '@/hooks/useWebSocket'

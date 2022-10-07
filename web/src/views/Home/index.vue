@@ -1,10 +1,6 @@
 <template>
   <div class="home">
     <Hearder :title="title" />
-    <div class="text-6xl font-bold mt-10 text-green-500">Hello Tailwindcss</div>
-    <div class="text-6xl font-bold mt-10 text-yellow-300">{{ storeTitle }}</div>
-    <div class="text-6xl font-bold mt-10 text-blue-400">{{ newCount }}</div>
-    <div class="text-6xl font-bold mt-10 text-red-500">Go!</div>
   </div>
 </template>
 
@@ -19,7 +15,7 @@
   import { storeToRefs } from 'pinia'
   import Hearder from './Hearder.vue'
 
-  const title = ref(`Vite-Vue3-TypeScript`)
+  const title = ref(`Welcome XShare 🌟`)
 
   /**
    * 使用vue内置全局环境变量
