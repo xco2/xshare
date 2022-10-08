@@ -56,25 +56,31 @@ def index():
 def serial_creater():
     global serial_home
     if request.method == 'POST':
-        # json_data = request.json
-        # json_data = json.loads(json_data)
-        # logger.info(json_data)
-        # key = json_data["key"]  # 密码
-        key = request.form["key"]
+        json_data = request.json
+        if json_data is not None:
+            is_json = True
+            json_data = json.loads(json_data)
+            logger.info(json_data)
+            key = json_data["key"]  # 密码
+        else:
+            is_json = False
+            key = request.form["key"]
         try:
             # v_t = int(json_data["v_t"])  # 有效时间
             v_t = int(request.form["v_t"])  # 有效时间
         except:
-            # return jsonify({"code": -1, "msg": "有效时间错误"})
-            return "有效时间错误"
+            return jsonify({"code": -1, "msg": "有效时间错误", "data": None})
+            # return "有效时间错误"
 
         serial, file_id = serial_home.create_serial(key, v_t)
         session['file_id'] = file_id
-        # return jsonify({"code": 1, "serial": serial})
-        return serial
+        if is_json:
+            return jsonify({"code": 1, "msg": "", "data": serial})
+        else:
+            return serial
     else:
-        # return jsonify({"code": -1})
-        return "-1"
+        return jsonify({"code": -1, "msg": "请求错误", "data": None})
+        # return "-1"
 
 
 # 检测上传码
@@ -82,31 +88,42 @@ def serial_creater():
 def check_serial():
     global serial_home
     if request.method == 'POST':
-        # json_data = request.json
-        # json_data = json.loads(json_data)
-        # logger.info(json_data)
-        # serial = json_data["serial"]
-        serial = request.form['serial']
+        json_data = request.json
+        if json_data is not None:
+            is_json = True
+            json_data = json.loads(json_data)
+            logger.info(json_data)
+            serial = json_data["serial"]
+        else:
+            is_json = False
+            serial = request.form['serial']
         if serial is None:
-            return "错误上传码,<a href='/'>返回</a>"
+            # return "错误上传码,<a href='/'>返回</a>"
+            return jsonify({"code": -1, "msg": "错误上传码", "data": False})
 
         file_id, user = serial_home.check_serial(serial)
         logger.info(file_id)
 
         if file_id is None:
-            # return jsonify({"code": -1, "msg": "错误上传码"})
-            return "错误上传码,<a href='/'>返回</a>"
+            if is_json:
+                return jsonify({"code": -1, "msg": "错误上传码", "data": False})
+            else:
+                return "错误上传码,<a href='/'>返回</a>"
         elif file_id == -1:
-            # return jsonify({"code": 0, "msg": "上传码已过期"})
-            return "上传码已过期,<a href='/'>返回</a>"
+            if is_json:
+                return jsonify({"code": -1, "msg": "上传码已过期", "data": False})
+            else:
+                return "上传码已过期,<a href='/'>返回</a>"
         else:
             # TODO: 添加授权者与file_id的映射到数据库
             session['file_id'] = file_id
-            # return jsonify({"code": 1, "msg": "通过验证"})
-            return "<script>window.location = '/'</script>"
+            if is_json:
+                return jsonify({"code": 1, "msg": "通过验证", "data": True})
+            else:
+                return "<script>window.location = '/'</script>"
     else:
-        # return jsonify({"code": -1, "msg": "错误上传码"})
-        return "错误上传码,<a href='/'>返回</a>"
+        return jsonify({"code": -1, "msg": "错误上传码", "data": False})
+        # return "错误上传码,<a href='/'>返回</a>"
 
 
 # =======================上传文件======================
