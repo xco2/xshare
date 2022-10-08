@@ -1,9 +1,9 @@
 <template>
   <PageContainer>
     <Card title="请输入验证码" class="container">
-      <a-input-password default-value="" v-model="password" placeholder="请输入验证码" />
-      <div class="submit" @click="onSubmit">
-        <a-button type="primary">验证</a-button>
+      <a-textarea v-model:value="password" placeholder="请输入验证码" :rows="4" />
+      <div class="submit" @click="onSubmit()">
+        <a-button type="primary" size="large" style="width: 20vw">验证</a-button>
       </div>
     </Card>
   </PageContainer>
@@ -12,39 +12,41 @@
 <script lang="ts" setup>
   import PageContainer from '@/components/common/PageContainer'
   import Card from '@/components/common/Card'
-  import { useRequest } from 'vue-hooks-plus'
+  import { useRequest, useSessionStorageState } from 'vue-hooks-plus'
   import { validateUploadCode } from './services'
+
+  const [_, setKey] = useSessionStorageState('use-check-key', { defaultValue: '' })
+
   const password = ref('')
 
-  const router = useRouter()
+  const emit = defineEmits(['setVerification'])
+
+  const setVerification = (value: boolean) => {
+    emit('setVerification', value)
+  }
+
+  defineExpose({
+    setVerification,
+  })
 
   const { run } = useRequest(validateUploadCode, {
     manual: true,
-    onSuccess: (data) => {
-      if (data.code === '0') {
-        router.addRoute({
-          path: `/${data.path}`,
-          name: '上传页',
-          component: () => import('@/views/user-upload/Upload.vue'),
-        })
-      }
+    onSuccess: () => {
+      setVerification(true)
+      setKey(password.value)
     },
   })
   const onSubmit = () => {
     run(password.value)
   }
-
-  // 验证成功动态注册路由
 </script>
 
 <style scoped lang="less">
   .container {
-    width: 300px;
-    position: absolute;
-    left: 50%;
-    top: 40%;
-    transform: translate(-50%, -50%);
+    width: 30vw;
     padding: 12px;
+    min-width: 260px;
+    background-color: #c0c0c0;
 
     .submit {
       width: 100%;

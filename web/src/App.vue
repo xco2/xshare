@@ -7,45 +7,67 @@
         </a-col>
       </a-row> -->
       <div style="height: 8px"></div>
-      <a-menu mode="inline" class="layout-menu">
-        <a-menu-item key="1">
+      <a-menu
+        mode="inline"
+        class="layout-menu"
+        @click="(menuClick as MenuClickEventHandler)"
+        v-model:selectedKeys="selectedKeys"
+      >
+        <a-menu-item key="/home">
           <home-outlined />
           <span>首页</span>
         </a-menu-item>
-        <a-menu-item key="2">
+        <a-menu-item key="/upload">
           <cloud-upload-outlined />
           <span>上传</span>
         </a-menu-item>
 
-        <a-menu-item key="9">
+        <a-menu-item key="/app-warehouse">
           <appstore-outlined />
           <span>资源库</span>
         </a-menu-item>
       </a-menu>
     </a-layout-sider>
     <a-layout style="padding: 12px; background-color: rgb(26, 26, 26)">
-      <a-layout-content class="layout-content" :style="{ height: `${layoutContentHeight}px` }">
+      <a-layout-content class="layout-content">
         <router-view v-slot="{ Component }">
           <keep-alive>
             <component :is="Component" />
           </keep-alive>
         </router-view>
       </a-layout-content>
-      <!-- <a-layout-footer style="background-color: rgb(26, 26, 26)" /> -->
     </a-layout>
   </a-layout>
 </template>
 
 <script lang="ts" setup>
   import { AppstoreOutlined, HomeOutlined, CloudUploadOutlined } from '@ant-design/icons-vue'
+  import { MenuClickEventHandler } from 'ant-design-vue/es/menu/src/interface'
+  import { useWinResize } from 'vue-hooks-plus'
 
+  const router = useRouter()
+  const route = useRoute()
+  const collapsed = ref(true)
   const layoutContentHeight = ref(0)
+  const selectedKeys = ref(['/home'])
+
+  watchEffect(() => {
+    selectedKeys.value = [route.path]
+  })
+
   onMounted(() => {
     const height = window.outerHeight - 135
     layoutContentHeight.value = height
   })
 
-  const collapsed = ref(true)
+  useWinResize(() => {
+    const height = window.outerHeight - 135
+    layoutContentHeight.value = height
+  })
+
+  const menuClick = ({ key }: { key: string }) => {
+    router.push(key)
+  }
 </script>
 <style>
   body {
@@ -58,6 +80,7 @@
     overflow: scroll;
     min-height: 280px;
     border-radius: 0.35rem;
+    height: calc(100vh - 24px);
   }
 
   .layout-sider {

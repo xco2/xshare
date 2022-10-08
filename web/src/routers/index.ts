@@ -15,14 +15,14 @@ const routers = createRouter({
       component: () => import('@/views/Home/index.vue'),
     },
     {
-      name: 'demo',
-      path: '/demo',
-      component: () => import('@/views/demo/demo.vue'),
+      name: 'upload',
+      path: '/upload',
+      component: () => import('@/views/user-upload/index.vue'),
     },
     {
-      name: 'verification',
-      path: '/permission/verification',
-      component: () => import('@/views/permission/Verification.vue'),
+      name: 'app-warehouse',
+      path: '/app-warehouse',
+      component: () => import('@/views/app-warehouse/index.vue'),
     },
   ],
 })
