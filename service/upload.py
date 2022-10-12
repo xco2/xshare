@@ -6,6 +6,7 @@ import cv2
 import time, os, json
 from PIL import Image
 from loguru import logger
+from flask_cors import CORS
 
 # 43.138.187.142
 server_ip = "0.0.0.0"
@@ -16,6 +17,7 @@ upload_encrypted_files_save_path = "./encryptedFiles"
 # flask
 app = Flask(__name__, static_folder=upload_files_save_path)
 app.config['SECRET_KEY'] = os.urandom(24)
+CORS(app, resources={r"/*": {"origins": "*"}})  # 跨域
 
 # 定时任务
 scheduler = APScheduler()
@@ -62,7 +64,10 @@ def index():
 def serial_creater():
     global serial_home
     if request.method == 'POST':
-        json_data = request.json
+        try:
+            json_data = request.json
+        except:
+            json_data = None
         if json_data is not None:
             is_json = True
             json_data = json.loads(json_data)
@@ -70,7 +75,7 @@ def serial_creater():
             key = json_data["key"]  # 密码
         else:
             is_json = False
-            key = request.form["key"]
+            key = request.form.get("key")
         try:
             # v_t = int(json_data["v_t"])  # 有效时间
             v_t = int(request.form["v_t"])  # 有效时间
@@ -94,7 +99,10 @@ def serial_creater():
 def check_serial():
     global serial_home
     if request.method == 'POST':
-        json_data = request.json
+        try:
+            json_data = request.json
+        except:
+            json_data = None
         if json_data is not None:
             is_json = True
             json_data = json.loads(json_data)
