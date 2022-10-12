@@ -24,7 +24,13 @@ scheduler = APScheduler()
 serial_home = Serial()
 
 
+# =======================定时清理=======================
 @scheduler.task('cron', id='clean_files', day='*', hour='4', minute='00', second='00')
+def clean_files_schedul():
+    return clean_files()
+
+
+# 多套一层方便手动调用
 def clean_files():
     now_time = time.time()
 
@@ -32,7 +38,7 @@ def clean_files():
     for save_path in [upload_files_save_path, upload_encrypted_files_save_path]:
         for root, dirs, files in os.walk(save_path):
             for f in files:
-                f_time = int(f.split("_")[1].split(".")[0])
+                f_time = int(f.split("_")[1].split("@")[0])
                 # 超过3天删除
                 if now_time - f_time >= 3 * 24 * 60 * 60:
                     file_path = os.path.join(save_path, f)
@@ -128,7 +134,7 @@ def check_serial():
 
 # =======================上传文件======================
 # 生成压缩图
-def create_litter_img(img_path: str, shape=80):
+def create_litter_img(img_path: str, shape=100):
     img = Image.open(img_path)
     w, h = img.size
     wph = w / h
@@ -155,28 +161,30 @@ def upload():
     file_id = session.get('file_id')
     logger.info(file_id)
     if file_id is None:
-        # return jsonify({"code": -1, "msg": "未输入上传码"})
-        return "未输入上传码,<a href='/'>返回</a>"
+        return jsonify({"code": -1, "msg": "未输入上传码", "data": False})
+        # return "未输入上传码,<a href='/'>返回</a>"
     else:
         # 获取上传的文件
-        file_obj = request.files.get("upload_file")
-        if file_obj is None:
-            # return jsonify({"code": -1, "msg": "文件上传为空"})
-            return "文件上传为空,<a href='/'>返回</a>"
+        file_objs = request.files.getlist("upload_file")
+        if file_objs is None:
+            return jsonify({"code": -1, "msg": "文件上传为空", "data": False})
+            # return "文件上传为空,<a href='/'>返回</a>"
+        for file_obj in file_objs:
+            file_bytes = file_obj.read()
+            logger.info("文件大小{0}KB".format(len(file_bytes) / 8 / 1024))
+            if len(file_bytes) > 100 * 1024 * 1024 * 8:  # 文件大小限制,100MB
+                return jsonify({"code": -1, "msg": "文件过于100MB", "data": False})
+                # return "文件过于100MB,<a href='/'>返回</a>"
 
-        file_bytes = file_obj.read()
-        logger.info("文件大小{0}KB".format(len(file_bytes) / 8 / 1024))
-        if len(file_bytes) > 100 * 1024 * 1024 * 8:  # 文件大小限制,100MB
-            # return jsonify({"code": -1, "msg": "文件过于100MB"})
-            return "文件过于100MB,<a href='/'>返回</a>"
-
-        file_type = file_obj.filename.split(".")[-1]
-        file_name = str(file_id) + "_" + str(int(time.time())) + "." + file_type
-        file_name = os.path.join(upload_files_save_path, file_name)
-        with open(file_name, "wb") as f:
-            f.write(file_bytes)
-        create_litter_img(file_name)
-        return "文件上传成功{0},<a href='/'>返回</a>".format(file_id)
+            file_type = file_obj.filename.split(".")[-1]
+            file_name = str(file_id) + "_" + str(int(time.time())) + "@" + file_obj.filename
+            file_name = os.path.join(upload_files_save_path, file_name)
+            with open(file_name, "wb") as f:
+                f.write(file_bytes)
+            if file_type in ["png", "jpg", "jpeg"]:
+                create_litter_img(file_name)
+        # return "文件上传成功{0},<a href='/'>返回</a>".format(file_id)
+        return jsonify({"code": 1, "msg": "文件上传成功{0}".format(file_id), "data": True})
 
 
 # 上传文件,加密
@@ -269,6 +277,8 @@ if __name__ == '__main__':
         os.mkdir(upload_files_save_path)
     if not os.path.exists(upload_encrypted_files_save_path):
         os.mkdir(upload_encrypted_files_save_path)
+
+    clean_files()
 
     scheduler.init_app(app)
     scheduler.start()
