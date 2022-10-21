@@ -64,7 +64,7 @@ def calib_camera(calib_dir, pattern_size=(8, 6), draw_points=False):
     yl = np.linspace(0, pattern_size[1], pattern_size[1], endpoint=False)
     xv, yv = np.meshgrid(xl, yl)
     object_point = np.insert(np.stack([xv, yv], axis=-1), 2, 0, axis=-1).astype(np.float32).reshape([-1, 3])
-    object_point*=200
+    # object_point*=200
     print(object_point)
     # set termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -110,6 +110,8 @@ def calib_camera(calib_dir, pattern_size=(8, 6), draw_points=False):
                                                                        None,
                                                                        None,
                                                                        criteria=criteria)
+    dst = cv2.undistort(img, k_cam, dist_coeffs)
+    cv2.imshow("dst", cv2.resize(dst, None, fx=1 / 3, fy=1 / 3))
     print(reproj_err, "\n", k_cam, "\n", dist_coeffs)
     return k_cam, dist_coeffs
 
