@@ -7,12 +7,15 @@ import time, os, json
 from PIL import Image
 from loguru import logger
 from flask_cors import CORS
+from calibrate_camera import *
 
 # 43.138.187.142
 server_ip = "0.0.0.0"
 port = 13000
 upload_files_save_path = "./uploadFiles"
 upload_encrypted_files_save_path = "./encryptedFiles"
+
+upload_calibrate_camera_save_path = "./calib_camera_imgs"
 
 # flask
 app = Flask(__name__, static_folder=upload_files_save_path)
@@ -180,9 +183,9 @@ def upload():
         for file_obj in file_objs:
             file_bytes = file_obj.read()
             logger.info("文件大小{0}KB".format(len(file_bytes) / 8 / 1024))
-            if len(file_bytes) > 100 * 1024 * 1024 * 8:  # 文件大小限制,100MB
-                return jsonify({"code": -1, "msg": "文件过于100MB", "data": False})
-                # return "文件过于100MB,<a href='/'>返回</a>"
+            # if len(file_bytes) > 100 * 1024 * 1024 * 8:  # 文件大小限制,100MB
+            #     return jsonify({"code": -1, "msg": "文件过于100MB", "data": False})
+            # return "文件过于100MB,<a href='/'>返回</a>"
 
             file_type = file_obj.filename.split(".")[-1]
             file_name = str(file_id) + "_" + str(int(time.time())) + "@" + file_obj.filename
@@ -280,11 +283,34 @@ def decrypt_file():
         return Response(file_bytes)
 
 
+# =====================获取摄像机内参===================
+
+@app.route("/calibrateCamera", methods=["POST"])
+def calibrate_camera():
+    uploaded_dir = upload_chessboard_img(upload_calibrate_camera_save_path)
+    if uploaded_dir:
+        imgs = load_imgs(uploaded_dir)
+        try:
+            k_cam, dist_coeffs, _, _ = calib_camera(imgs)
+            k_cam = str(k_cam)
+            dist_coeffs = str(dist_coeffs)
+            return jsonify({"code": 1, "msg": "成功获取内参数", "data": [k_cam, dist_coeffs]})
+        except:
+            return jsonify({"code": -1, "msg": "获取内参数失败", "data": False})
+    else:
+        return jsonify({"code": -1, "msg": "照片数量不足", "data": False})
+
+
 if __name__ == '__main__':
+    # 上传分享文件的目录
     if not os.path.exists(upload_files_save_path):
         os.mkdir(upload_files_save_path)
     if not os.path.exists(upload_encrypted_files_save_path):
         os.mkdir(upload_encrypted_files_save_path)
+
+    # 上传矫正摄像机照片的目录
+    if not os.path.exists(upload_calibrate_camera_save_path):
+        os.mkdir(upload_calibrate_camera_save_path)
 
     clean_files()
 

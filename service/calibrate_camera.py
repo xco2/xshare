@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 import os
+from flask import Flask, request, render_template, session, jsonify, Response
+import time
 
 
 def generate_chessboard(cube_cm=2., pattern_size=(8, 6), scale=37.79527559055118):
@@ -44,16 +46,32 @@ def generate_chessboard(cube_cm=2., pattern_size=(8, 6), scale=37.79527559055118
     chessboard = cv2.copyMakeBorder(image, 30, 30, 30, 30, borderType=cv2.BORDER_CONSTANT, value=(255, 255, 255))
     # visualize
     win_name = "chessboard"
-    cv2.imshow(win_name, chessboard)
+    # cv2.imshow(win_name, chessboard)
     # cv2.waitKey(0)
+    return cv2.cvtColor(chessboard, cv2.COLOR_BGR2RGB)
 
 
-def calib_camera(calib_dir, pattern_size=(8, 6), draw_points=False):
+def load_imgs(img_dir):
+    assert os.path.isdir(img_dir), 'Path {} is not a dir'.format(img_dir)
+    imagenames = os.listdir(img_dir)
+    imgs = []
+    for imagename in imagenames:
+        if os.path.splitext(imagename)[-1] not in ['.jpg', '.png', '.bmp', '.tiff', '.jpeg']:
+            continue
+        img_path = os.path.join(img_dir, imagename)
+        # img = cv2.imread(img_path)
+        img = cv2.imdecode(np.fromfile(img_path, dtype=np.uint8), -1)
+        imgs.append(img)
+    return imgs
+
+
+def calib_camera(imgs: list, pattern_size: [tuple, list] = (8, 6), draw_points: bool = False) -> tuple:
     """
     calibrate camera
-    :param calib_dir: str
-    :param pattern_size: (x, y), the number of points in x, y axes in the chessboard
-    :param draw_points: bool, whether to draw the chessboard points
+    :param imgs: 棋盘照片列表
+    :param pattern_size: (x, y), 棋盘中x、y轴上的点数
+    :param draw_points: bool, 是否绘制棋盘点
+    :return: k_cam, dist_coeffs, dst:矫正样例, draw_points_imgs:绘制了棋盘点的图
     """
     # store 3d object points and 2d image points from all the images
     object_points = []
@@ -64,23 +82,12 @@ def calib_camera(calib_dir, pattern_size=(8, 6), draw_points=False):
     yl = np.linspace(0, pattern_size[1], pattern_size[1], endpoint=False)
     xv, yv = np.meshgrid(xl, yl)
     object_point = np.insert(np.stack([xv, yv], axis=-1), 2, 0, axis=-1).astype(np.float32).reshape([-1, 3])
-    # object_point*=200
-    print(object_point)
     # set termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
-    # load image
-    img_dir = calib_dir
-    assert os.path.isdir(img_dir), 'Path {} is not a dir'.format(img_dir)
-    imagenames = os.listdir(img_dir)
-    for imagename in imagenames:
-        if os.path.splitext(imagename)[-1] not in ['.jpg', '.png', '.bmp', '.tiff', '.jpeg']:
-            continue
-        img_path = os.path.join(img_dir, imagename)
-        # img = cv2.imread(img_path)
-        img = cv2.imdecode(np.fromfile(img_path, dtype=np.uint8), -1)
+    draw_points_imgs = []
+    for img in imgs:
         img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
         # find chessboard points
         ret, corners = cv2.findChessboardCorners(img_gray, patternSize=pattern_size)
         if ret:
@@ -99,8 +106,9 @@ def calib_camera(calib_dir, pattern_size=(8, 6), draw_points=False):
                 else:
                     img_draw = img
 
-                cv2.imshow('img', img_draw)
-                cv2.waitKey(0)
+                draw_points_imgs.append(img_draw)
+                # cv2.imshow('img', img_draw)
+                # cv2.waitKey(0)
 
     assert len(image_points) > 0, 'Cannot find any chessboard points, maybe incorrect pattern_size has been set'
     # calibrate the camera, note that ret is the rmse of reprojection error, ret=1 means 1 pixel error
@@ -110,15 +118,44 @@ def calib_camera(calib_dir, pattern_size=(8, 6), draw_points=False):
                                                                        None,
                                                                        None,
                                                                        criteria=criteria)
+
     dst = cv2.undistort(img, k_cam, dist_coeffs)
-    cv2.imshow("dst", cv2.resize(dst, None, fx=1 / 3, fy=1 / 3))
-    print(reproj_err, "\n", k_cam, "\n", dist_coeffs)
-    return k_cam, dist_coeffs
+    # cv2.imshow("dst", cv2.resize(dst, None, fx=1 / 3, fy=1 / 3))
+    # print(reproj_err, "\n", k_cam, "\n", dist_coeffs)
+    return k_cam, dist_coeffs, dst, draw_points_imgs
+
+
+def upload_chessboard_img(save_path) -> [bool, str]:
+    """
+    上传棋盘照片
+    :param save_path:保存的目录
+    :return: 成功返回保存的目录,失败返回False
+    """
+    random_dir_name = "{0:0>}".format(np.random.randint(1, 9999))
+    save_path_r = os.path.join(save_path, random_dir_name)
+    while os.path.exists(save_path_r):
+        random_dir_name = "{0:0>}".format(np.random.randint(1, 9999))
+        save_path_r = os.path.join(save_path, random_dir_name)
+    os.mkdir(save_path_r)
+
+    file_objs = request.files.getlist("upload_file")
+    if len(file_objs) < 20:
+        return False
+    for file_id, file_obj in enumerate(file_objs):
+        file_bytes = file_obj.read()
+        file_name = os.path.join(save_path_r, file_obj.filename)
+        with open(file_name, "wb") as f:
+            f.write(file_bytes)
+    return save_path_r
 
 
 if __name__ == '__main__':
     generate_chessboard()
-    calib_camera(r"D:\啊这\py项目\拼接图片\imgs\calibration\chess")
+    imgs = load_imgs(r"D:\啊这\py项目\拼接图片\imgs\calibration\chess")
+    k_cam, dist_coeffs, dst, draw_points_imgs = calib_camera(imgs)
+    print(k_cam)
+    print(dist_coeffs)
+
     """
     [[2.87621783e+03 0.00000000e+00 9.58328196e+02]
     [0.00000000e+00 2.89709485e+03 5.39127066e+02]
