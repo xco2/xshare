@@ -71,20 +71,24 @@ def serial_creater():
             json_data = request.json
         except:
             json_data = None
-        if json_data is not None:
+        if json_data is not None:  # json方式
             is_json = True
-            json_data = json.loads(json_data)
             logger.info(json_data)
             key = json_data["key"]  # 密码
-        else:
+            try:
+                v_t = int(json_data["v_t"])  # 有效时间
+            except:
+                v_t = None
+        else:  # form表单方式
             is_json = False
             key = request.form.get("key")
-        try:
-            # v_t = int(json_data["v_t"])  # 有效时间
-            v_t = int(request.form["v_t"])  # 有效时间
-        except:
+            try:
+                v_t = int(request.form["v_t"])  # 有效时间
+            except:
+                v_t = None
+
+        if v_t is None:
             return jsonify({"code": -1, "msg": "有效时间错误", "data": None})
-            # return "有效时间错误"
 
         serial, file_id = serial_home.create_serial(key, v_t)
         session['file_id'] = file_id
@@ -108,7 +112,6 @@ def check_serial():
             json_data = None
         if json_data is not None:
             is_json = True
-            json_data = json.loads(json_data)
             logger.info(json_data)
             serial = json_data["serial"]
         else:
