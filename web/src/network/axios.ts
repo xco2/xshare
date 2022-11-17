@@ -4,9 +4,6 @@ import axios, { AxiosRequestConfig } from 'axios'
 //post请求头
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8'
 
-//设置超时
-// axios.defaults.timeout = 10_000;
-
 const axiosInstance = axios.create({
   timeout: 10000,
   baseURL: import.meta.env.VITE_APP_BASE_URL,
@@ -20,7 +17,7 @@ axiosInstance.interceptors.request.use(
         ...config,
         headers: {
           ...config.headers,
-          Authorization: accessToken ? `Bearer ${accessToken}` : '',
+          Authorization: sessionStorage.getItem('access_token') ?? '',
         },
       }
     }
@@ -61,7 +58,8 @@ const request = <ResponseType = unknown>(
       ...options,
     })
       .then((res) => {
-        resolve(res.data.data)
+        if (res.data.data) resolve(res.data.data)
+        else resolve(res.data)
       })
       .catch((err) => reject(err))
   })

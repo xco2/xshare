@@ -112,14 +112,14 @@
 
   onMounted(() => {
     translateX.value = !check.value
-      ? document.getElementsByClassName('layout-content')[0].clientWidth / 2 - 327 / 2
+      ? document.getElementsByClassName('layout-content')[0].clientWidth / 2 - 164 / 2
       : 0
   })
 
   useWinResize(() => {
     translateX.value =
       dotStatus.value === 1
-        ? document.getElementsByClassName('layout-content')[0].clientWidth / 2 - 327 / 2
+        ? document.getElementsByClassName('layout-content')[0].clientWidth / 2 - 164 / 2
         : 0
   })
 
@@ -135,24 +135,24 @@
 
 <style scoped lang="less">
   .check {
-    background-color: #493131;
+    background-color: rgba(82, 129, 255, 0.15);
     width: auto;
-    line-height: 64px;
-    font-size: 24px;
-    padding: 24px;
-    border-radius: 1rem;
-    color: #fff;
+    line-height: 32px;
+    font-size: 12px;
+    padding: 12px;
+    border-radius: 0.5rem;
+    color: var(--xshare-font-color);
     transition: all 1s;
   }
 
   .dot {
     display: inline-block;
     position: relative;
-    width: 24px;
-    height: 24px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
-    top: 3px;
-    margin-left: 10px;
+    top: 1.5px;
+    margin-left: 5px;
   }
 
   .dot-inner {
@@ -169,18 +169,6 @@
   }
 
   @-webkit-keyframes vabDot {
-    0% {
-      opacity: 0.6;
-      transform: scale(0.8);
-    }
-
-    to {
-      opacity: 0;
-      transform: scale(2.4);
-    }
-  }
-
-  @keyframes vabDot {
     0% {
       opacity: 0.6;
       transform: scale(0.8);

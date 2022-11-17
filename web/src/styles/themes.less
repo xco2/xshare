@@ -1,0 +1,113 @@
+.dark {
+  &.container {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .title {
+    color: rgba(182, 202, 230, 0.85);
+  }
+
+  .extra {
+    color: rgba(182, 202, 230, 0.65);
+  }
+}
+
+html {
+  // 主色
+  --xshare-main-color: #ffffff;
+
+  // 页面背景
+  --xshare-page-background: rgba(247, 248, 250, 1);
+  --xshare-page-background-image: linear-gradient(#3975c6 60%, #f7f8fa);
+
+  //侧边栏
+  --xshare-layout-sider-color: rgb(255, 255, 255);
+  --xshare-layout-sider-font-color: rgb(0, 0, 0);
+
+  // 字体
+  --xshare-font-color: rgba(41, 65, 86, 1);
+  --xshare-font-active-color: rgba(82, 129, 255, 1);
+  --xshare-font-unactive-color: rgba(41, 65, 86, 0.85);
+
+  // 卡片
+  --xshare-card-background: rgba(255, 255, 255, 1);
+  --xshare-card-title: rgba(41, 65, 86, 0.65);
+
+  // 指标卡片
+  --xshare-index-card-background: rgba(82, 129, 255, 0.05);
+  --xshare-index-card-color: rgba(41, 65, 86, 1);
+  --xshare-index-title: rgba(41, 65, 86, 0.85);
+  --xshare-index-compared-title: rgba(41, 65, 86, 0.45);
+
+  // 表格
+  --xshare-table-background: rgba(255, 255, 255, 1);
+  --xshare-table-hover-background: #f6f7fb;
+  --xshare-table-color: rgba(41, 65, 86, 0.85);
+  --xshare-table-label-color: rgba(41, 65, 86, 0.65);
+  --xshare-table-grid-line: #dfe3e6;
+
+  //图表字体
+  --xshare-chart-font-color: rgba(41, 65, 86, 1);
+
+  --xshare-tabs-header-mask: linear-gradient(to left, #010116, rgba(255, 255, 255, 0));
+
+  // 加载状态背景
+  --xshare-loading-background: rgba(255, 255, 255, 0.55);
+
+  // 基于实时指标的
+  --xshare-real-header-color: rgba(255, 255, 255, 1);
+  --xshare-real-header-label-color: rgba(255, 255, 255, 0.65);
+  --xshare-real-header-compared-color: rgba(255, 255, 255, 0.45);
+  --xshare-real-header-bg: url(./pages/RealTime/images/header_light.png);
+
+  // 固定搜索头部的背景色
+  --affix-header-background-color: #3975c6;
+}
+html[data-prefers-color-scheme='dark'] {
+  --xshare-main-color: #010116;
+
+  --xshare-page-background: rgba(36, 36, 36, 0.7);
+  --xshare-page-background-image: linear-gradient(#010116 60%, #010116);
+
+  //侧边栏
+  --xshare-layout-sider-color: rgb(26, 26, 26);
+  --xshare-layout-sider-font-color: rgb(255, 255, 255);
+
+  // 字体
+  --xshare-font-color: rgba(182, 202, 230, 1);
+  --xshare-font-active-color: rgba(82, 129, 255, 1);
+  --xshare-font-unactive-color: rgba(255, 255, 255, 0.65);
+
+  // 卡片
+  --xshare-card-background: rgba(255, 255, 255, 0.1);
+  --xshare-card-title: rgba(182, 202, 230, 1);
+
+  // 指标卡片
+  --xshare-index-card-background: rgba(255, 255, 255, 0.03);
+  --xshare-index-card-color: rgba(182, 202, 230, 1);
+  --xshare-index-title: rgba(182, 202, 230, 0.85);
+  --xshare-index-compared-title: rgba(182, 202, 230, 0.45);
+
+  // 表格
+  --xshare-table-background: #1a1a2d;
+  --xshare-table-hover-background: #34304a;
+  --xshare-table-color: rgba(182, 202, 230, 1);
+  --xshare-table-label-color: rgba(182, 202, 230, 0.65);
+  --xshare-table-grid-line: #443c4a;
+
+  //图表字体
+  --xshare-chart-font-color: rgba(182, 202, 230, 1);
+
+  --xshare-tabs-header-mask: linear-gradient(to left, #ffffff, rgba(0, 0, 0, 0));
+
+  // 加载状态背景
+  --xshare-loading-background: rgba(0, 0, 0, 0.35);
+
+  // 基于实时指标的
+  --xshare-real-header-color: rgba(182, 202, 230, 1);
+  --xshare-real-header-label-color: rgba(182, 202, 230, 0.65);
+  --xshare-real-header-compared-color: rgba(182, 202, 230, 0.45);
+  --xshare-real-header-bg: url(./pages/RealTime/images/header.png);
+
+  --affix-header-background-color: var(--xshare-page-background);
+}

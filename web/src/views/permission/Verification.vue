@@ -1,6 +1,6 @@
 <template>
   <PageContainer>
-    <Card title="请输入验证码" class="container">
+    <Card title="请输入验证码">
       <a-textarea v-model:value="password" placeholder="请输入验证码" :rows="4" />
       <div class="submit" @click="onSubmit()">
         <a-button type="primary" size="large" style="width: 20vw">验证</a-button>
@@ -36,8 +36,6 @@
     manual: true,
     onSuccess: () => {
       setVerification(true)
-      console.log(password.value)
-
       setKey(password.value)
     },
   })
@@ -53,10 +51,8 @@
 
 <style scoped lang="less">
   .container {
-    width: 30vw;
+    width: 40vw;
     padding: 12px;
-    min-width: 260px;
-    background-color: #c0c0c0;
 
     .submit {
       width: 100%;
