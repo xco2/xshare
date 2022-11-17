@@ -1,4 +1,3 @@
-/// <reference types="vite/client" />
 declare module 'slash2'
 declare module '*.css'
 declare module '*.less'
@@ -26,6 +25,7 @@ declare module '*.vue' {
 
 interface ImportMetaEnv {
   readonly VITE_APP_ENV: 'test' | 'dev' | 'pro'
+  readonly VITE_APP_BASE_URL: string
   // 更多环境变量...
 }
 

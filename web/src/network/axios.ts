@@ -9,6 +9,7 @@ axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded
 
 const axiosInstance = axios.create({
   timeout: 10000,
+  baseURL: import.meta.env.VITE_APP_BASE_URL,
 })
 
 axiosInstance.interceptors.request.use(

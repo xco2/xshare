@@ -43,6 +43,7 @@
     useWinResize,
   } from 'vue-hooks-plus'
   import { validateUploadCode } from './services'
+  import { useHomeStore } from '@/store/modules/home'
 
   const status = {
     0: '需要进行一段验证',
@@ -56,39 +57,60 @@
     2: '#32CD32',
   }
 
-  const router = useRouter()
+  const homeStore = useHomeStore()
 
   const [check, { set: setCheck }] = useBoolean(false)
   const [verificationVisiable, { set: setVerificationVisiable }] = useBoolean(false)
   const [verification, { set: setVerification }] = useBoolean(false)
 
+  const [sessionKey, _] = useSessionStorageState('use-check-key', { defaultValue: '' })
+
   const translateX = ref(0)
 
   const dotStatus = ref<number>(0)
+
+  const { run } = useRequest(validateUploadCode, {
+    manual: true,
+    onSuccess: (data) => {
+      if (data) {
+        dotStatus.value = 2
+        homeStore.setPermissionAccess(true)
+      } else dotStatus.value = 0
+    },
+    onFinally: () => {
+      homeStore.setPermissionLoading(false)
+    },
+  })
 
   watchEffect(() => {
     if (check.value === false) dotStatus.value = 0
     else dotStatus.value = 1
   })
 
-  const { run } = useRequest(validateUploadCode, {
-    manual: true,
-    onSuccess: () => {
+  const isAccess = computed(() => homeStore.getPermissionAccess)
+
+  watchEffect(() => {
+    if (sessionKey.value && !isAccess.value) {
+      homeStore.setPermissionLoading(true)
+      run(sessionKey.value)
+    }
+
+    if (isAccess.value) {
       dotStatus.value = 2
-    },
+      homeStore.setPermissionLoading(false)
+    }
   })
 
-  router.beforeEach(() => {
-    const [sessionKey, _] = useSessionStorageState('use-check-key', { defaultValue: '' })
-    if (sessionKey.value === '123') dotStatus.value = 2
-    if (sessionKey.value) run(sessionKey.value)
+  watchEffect(() => {
+    if (verification.value) {
+      translateX.value = 0
+      dotStatus.value = 2
+    }
   })
 
   const checkTitle = computed(() => status[dotStatus.value as keyof typeof status])
 
   onMounted(() => {
-    const [sessionKey, _] = useSessionStorageState('use-check-key', { defaultValue: '' })
-    if (sessionKey.value === '123') dotStatus.value = 2
     translateX.value = !check.value
       ? document.getElementsByClassName('layout-content')[0].clientWidth / 2 - 327 / 2
       : 0
@@ -109,13 +131,6 @@
       }, 1500)
     }
   }
-
-  watchEffect(() => {
-    if (verification.value) {
-      translateX.value = 0
-      dotStatus.value = 2
-    }
-  })
 </script>
 
 <style scoped lang="less">

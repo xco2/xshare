@@ -14,6 +14,9 @@
   import Card from '@/components/common/Card'
   import { useRequest, useSessionStorageState } from 'vue-hooks-plus'
   import { validateUploadCode } from './services'
+  import { useHomeStore } from '@/store/modules/home'
+
+  const homeStore = useHomeStore()
 
   const [_, setKey] = useSessionStorageState('use-check-key', { defaultValue: '' })
 
@@ -29,18 +32,23 @@
     setVerification,
   })
 
-  const { run } = useRequest(validateUploadCode, {
+  const { run, loading } = useRequest(validateUploadCode, {
     manual: true,
     onSuccess: () => {
       setVerification(true)
+      console.log(password.value)
+
       setKey(password.value)
     },
   })
+
   const onSubmit = () => {
-    setVerification(true)
-    setKey(password.value)
-    // run(password.value)
+    run(password.value)
   }
+
+  watchEffect(() => {
+    homeStore.setPermissionLoading(loading.value)
+  })
 </script>
 
 <style scoped lang="less">

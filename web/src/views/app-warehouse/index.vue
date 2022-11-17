@@ -1,7 +1,9 @@
 <template>
-  <Permission>
-    <div>资源库</div>
-  </Permission>
+  <Loading>
+    <Permission>
+      <div>资源库</div>
+    </Permission>
+  </Loading>
 </template>
 
 <script lang="ts" setup>

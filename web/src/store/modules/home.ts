@@ -1,37 +1,31 @@
-import { defineStore } from 'pinia';
+import { defineStore } from 'pinia'
 
 type HomeType = {
-  title: string;
-  count: number;
-};
+  permissionLoading: boolean
+  access: boolean
+}
 
 export const useHomeStore = defineStore('home', {
   state: (): HomeType => {
     return {
-      title: 'Pinia',
-      count: 0,
-    };
+      permissionLoading: false,
+      access: false,
+    }
   },
   getters: {
-    getFuncTitle(): string {
-      return `Hello ${this.title}`;
+    getPermissionLoading(): boolean {
+      return this.permissionLoading
+    },
+    getPermissionAccess(): boolean {
+      return this.access
     },
   },
   actions: {
-    increment() {
-      this.count++;
+    setPermissionLoading(status: boolean) {
+      this.permissionLoading = status
     },
-    async incrementPromise() {
-      try {
-        const result = await new Promise((resolve: (value: number) => void) => {
-          setTimeout(() => {
-            resolve(10);
-          }, 2000);
-        });
-        this.count += result;
-      } catch (error) {
-        console.log(error);
-      }
+    setPermissionAccess(status: boolean) {
+      this.access = status
     },
   },
-});
+})

@@ -10,7 +10,7 @@
       <a-menu
         mode="inline"
         class="layout-menu"
-        @click="(menuClick as MenuClickEventHandler)"
+        @click="(menuClick as any)"
         v-model:selectedKeys="selectedKeys"
       >
         <a-menu-item key="/home">
@@ -42,7 +42,7 @@
 
 <script lang="ts" setup>
   import { AppstoreOutlined, HomeOutlined, CloudUploadOutlined } from '@ant-design/icons-vue'
-  import { MenuClickEventHandler } from 'ant-design-vue/es/menu/src/interface'
+  // import { MenuClickEventHandler } from 'ant-design-vue/es/menu/src/interface'
   import { useWinResize } from 'vue-hooks-plus'
 
   const router = useRouter()

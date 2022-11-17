@@ -1,9 +1,11 @@
 <template>
-  <Permission>
-    <a-row style="margin-top: 80px" justify="center">
-      <a-col class="upload"> <Upload /> </a-col>
-    </a-row>
-  </Permission>
+  <Loading>
+    <Permission>
+      <a-row style="margin-top: 80px" justify="center">
+        <a-col class="upload"> <Upload /> </a-col>
+      </a-row>
+    </Permission>
+  </Loading>
 </template>
 
 <script lang="ts" setup>
