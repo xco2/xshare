@@ -37,7 +37,9 @@
     },
   })
   const onSubmit = () => {
-    run(password.value)
+    setVerification(true)
+    setKey(password.value)
+    // run(password.value)
   }
 </script>
 

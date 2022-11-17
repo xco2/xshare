@@ -6,6 +6,7 @@
         @click="checkClick"
         :style="{
           transform: `translate(${check ? translateX : 0}px)`,
+          cursor: dotStatus === 2 ? 'null' : 'pointer',
         }"
       >
         {{ checkTitle }}
@@ -36,9 +37,9 @@
   import Verification from './Verification.vue'
   import {
     useBoolean,
-    useInterval,
     useRequest,
     useSessionStorageState,
+    useTimeout,
     useWinResize,
   } from 'vue-hooks-plus'
   import { validateUploadCode } from './services'
@@ -56,7 +57,7 @@
   }
 
   const router = useRouter()
-  const [sessionKey, _] = useSessionStorageState('use-check-key', { defaultValue: '' })
+
   const [check, { set: setCheck }] = useBoolean(false)
   const [verificationVisiable, { set: setVerificationVisiable }] = useBoolean(false)
   const [verification, { set: setVerification }] = useBoolean(false)
@@ -78,13 +79,16 @@
   })
 
   router.beforeEach(() => {
+    const [sessionKey, _] = useSessionStorageState('use-check-key', { defaultValue: '' })
+    if (sessionKey.value === '123') dotStatus.value = 2
     if (sessionKey.value) run(sessionKey.value)
   })
 
   const checkTitle = computed(() => status[dotStatus.value as keyof typeof status])
 
   onMounted(() => {
-    if (sessionKey.value) run(sessionKey.value)
+    const [sessionKey, _] = useSessionStorageState('use-check-key', { defaultValue: '' })
+    if (sessionKey.value === '123') dotStatus.value = 2
     translateX.value = !check.value
       ? document.getElementsByClassName('layout-content')[0].clientWidth / 2 - 327 / 2
       : 0
@@ -98,9 +102,9 @@
   })
 
   const checkClick = () => {
-    if (check.value === false) {
+    if (dotStatus.value === 0) {
       setCheck(true)
-      useInterval(() => {
+      useTimeout(() => {
         setVerificationVisiable(true)
       }, 1500)
     }
@@ -123,7 +127,6 @@
     padding: 24px;
     border-radius: 1rem;
     color: #fff;
-    cursor: pointer;
     transition: all 1s;
   }
 
