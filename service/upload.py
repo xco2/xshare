@@ -6,6 +6,8 @@ import cv2
 import time, os, json
 from PIL import Image
 from loguru import logger
+from flask_cors import CORS
+from calibrate_camera import *
 
 # 43.138.187.142
 server_ip = "0.0.0.0"
@@ -13,9 +15,12 @@ port = 13000
 upload_files_save_path = "./uploadFiles"
 upload_encrypted_files_save_path = "./encryptedFiles"
 
+upload_calibrate_camera_save_path = "./calib_camera_imgs"
+
 # flask
 app = Flask(__name__, static_folder=upload_files_save_path)
 app.config['SECRET_KEY'] = os.urandom(24)
+CORS(app, resources={r"/*": {"origins": "*"}})  # 跨域
 
 # 定时任务
 scheduler = APScheduler()
@@ -24,7 +29,13 @@ scheduler = APScheduler()
 serial_home = Serial()
 
 
+# =======================定时清理=======================
 @scheduler.task('cron', id='clean_files', day='*', hour='4', minute='00', second='00')
+def clean_files_schedul():
+    return clean_files()
+
+
+# 多套一层方便手动调用
 def clean_files():
     now_time = time.time()
 
@@ -32,7 +43,7 @@ def clean_files():
     for save_path in [upload_files_save_path, upload_encrypted_files_save_path]:
         for root, dirs, files in os.walk(save_path):
             for f in files:
-                f_time = int(f.split("_")[1].split(".")[0])
+                f_time = int(f.split("_")[1].split("@")[0])
                 # 超过3天删除
                 if now_time - f_time >= 3 * 24 * 60 * 60:
                     file_path = os.path.join(save_path, f)
@@ -56,25 +67,38 @@ def index():
 def serial_creater():
     global serial_home
     if request.method == 'POST':
-        # json_data = request.json
-        # json_data = json.loads(json_data)
-        # logger.info(json_data)
-        # key = json_data["key"]  # 密码
-        key = request.form["key"]
         try:
-            # v_t = int(json_data["v_t"])  # 有效时间
-            v_t = int(request.form["v_t"])  # 有效时间
+            json_data = request.json
         except:
-            # return jsonify({"code": -1, "msg": "有效时间错误"})
-            return "有效时间错误"
+            json_data = None
+        if json_data is not None:  # json方式
+            is_json = True
+            logger.info(json_data)
+            key = json_data["key"]  # 密码
+            try:
+                v_t = int(json_data["v_t"])  # 有效时间
+            except:
+                v_t = None
+        else:  # form表单方式
+            is_json = False
+            key = request.form.get("key")
+            try:
+                v_t = int(request.form["v_t"])  # 有效时间
+            except:
+                v_t = None
+
+        if v_t is None:
+            return jsonify({"code": -1, "msg": "有效时间错误", "data": None})
 
         serial, file_id = serial_home.create_serial(key, v_t)
         session['file_id'] = file_id
-        # return jsonify({"code": 1, "serial": serial})
-        return serial
+        if is_json:
+            return jsonify({"code": 1, "msg": "", "data": serial})
+        else:
+            return serial
     else:
-        # return jsonify({"code": -1})
-        return "-1"
+        return jsonify({"code": -1, "msg": "请求错误", "data": None})
+        # return "-1"
 
 
 # 检测上传码
@@ -82,36 +106,49 @@ def serial_creater():
 def check_serial():
     global serial_home
     if request.method == 'POST':
-        # json_data = request.json
-        # json_data = json.loads(json_data)
-        # logger.info(json_data)
-        # serial = json_data["serial"]
-        serial = request.form['serial']
+        try:
+            json_data = request.json
+        except:
+            json_data = None
+        if json_data is not None:
+            is_json = True
+            logger.info(json_data)
+            serial = json_data["serial"]
+        else:
+            is_json = False
+            serial = request.form['serial']
         if serial is None:
-            return "错误上传码,<a href='/'>返回</a>"
+            # return "错误上传码,<a href='/'>返回</a>"
+            return jsonify({"code": -1, "msg": "错误上传码", "data": False})
 
         file_id, user = serial_home.check_serial(serial)
         logger.info(file_id)
 
         if file_id is None:
-            # return jsonify({"code": -1, "msg": "错误上传码"})
-            return "错误上传码,<a href='/'>返回</a>"
+            if is_json:
+                return jsonify({"code": -1, "msg": "错误上传码", "data": False})
+            else:
+                return "错误上传码,<a href='/'>返回</a>"
         elif file_id == -1:
-            # return jsonify({"code": 0, "msg": "上传码已过期"})
-            return "上传码已过期,<a href='/'>返回</a>"
+            if is_json:
+                return jsonify({"code": -1, "msg": "上传码已过期", "data": False})
+            else:
+                return "上传码已过期,<a href='/'>返回</a>"
         else:
             # TODO: 添加授权者与file_id的映射到数据库
             session['file_id'] = file_id
-            # return jsonify({"code": 1, "msg": "通过验证"})
-            return "<script>window.location = '/'</script>"
+            if is_json:
+                return jsonify({"code": 1, "msg": "通过验证", "data": True})
+            else:
+                return "<script>window.location = '/'</script>"
     else:
-        # return jsonify({"code": -1, "msg": "错误上传码"})
-        return "错误上传码,<a href='/'>返回</a>"
+        return jsonify({"code": -1, "msg": "错误上传码", "data": False})
+        # return "错误上传码,<a href='/'>返回</a>"
 
 
 # =======================上传文件======================
 # 生成压缩图
-def create_litter_img(img_path: str, shape=80):
+def create_litter_img(img_path: str, shape=100):
     img = Image.open(img_path)
     w, h = img.size
     wph = w / h
@@ -138,28 +175,30 @@ def upload():
     file_id = session.get('file_id')
     logger.info(file_id)
     if file_id is None:
-        # return jsonify({"code": -1, "msg": "未输入上传码"})
-        return "未输入上传码,<a href='/'>返回</a>"
+        return jsonify({"code": -1, "msg": "未输入上传码", "data": False})
+        # return "未输入上传码,<a href='/'>返回</a>"
     else:
         # 获取上传的文件
-        file_obj = request.files.get("upload_file")
-        if file_obj is None:
-            # return jsonify({"code": -1, "msg": "文件上传为空"})
-            return "文件上传为空,<a href='/'>返回</a>"
+        file_objs = request.files.getlist("upload_file")
+        if file_objs is None:
+            return jsonify({"code": -1, "msg": "文件上传为空", "data": False})
+            # return "文件上传为空,<a href='/'>返回</a>"
+        for file_obj in file_objs:
+            file_bytes = file_obj.read()
+            logger.info("文件大小{0}KB".format(len(file_bytes) / 8 / 1024))
+            # if len(file_bytes) > 100 * 1024 * 1024 * 8:  # 文件大小限制,100MB
+            #     return jsonify({"code": -1, "msg": "文件过于100MB", "data": False})
+            # return "文件过于100MB,<a href='/'>返回</a>"
 
-        file_bytes = file_obj.read()
-        logger.info("文件大小{0}KB".format(len(file_bytes) / 8 / 1024))
-        if len(file_bytes) > 100 * 1024 * 1024 * 8:  # 文件大小限制,100MB
-            # return jsonify({"code": -1, "msg": "文件过于100MB"})
-            return "文件过于100MB,<a href='/'>返回</a>"
-
-        file_type = file_obj.filename.split(".")[-1]
-        file_name = str(file_id) + "_" + str(int(time.time())) + "." + file_type
-        file_name = os.path.join(upload_files_save_path, file_name)
-        with open(file_name, "wb") as f:
-            f.write(file_bytes)
-        create_litter_img(file_name)
-        return "文件上传成功{0},<a href='/'>返回</a>".format(file_id)
+            file_type = file_obj.filename.split(".")[-1]
+            file_name = str(file_id) + "_" + str(int(time.time())) + "@" + file_obj.filename
+            file_name = os.path.join(upload_files_save_path, file_name)
+            with open(file_name, "wb") as f:
+                f.write(file_bytes)
+            if file_type in ["png", "jpg", "jpeg"]:
+                create_litter_img(file_name)
+        # return "文件上传成功{0},<a href='/'>返回</a>".format(file_id)
+        return jsonify({"code": 1, "msg": "文件上传成功{0}".format(file_id), "data": True})
 
 
 # 上传文件,加密
@@ -247,11 +286,36 @@ def decrypt_file():
         return Response(file_bytes)
 
 
+# =====================获取摄像机内参===================
+
+@app.route("/calibrateCamera", methods=["POST"])
+def calibrate_camera():
+    uploaded_dir = upload_chessboard_img(upload_calibrate_camera_save_path)
+    if uploaded_dir:
+        imgs = load_imgs(uploaded_dir)
+        try:
+            k_cam, dist_coeffs, _, _ = calib_camera(imgs)
+            k_cam = str(k_cam)
+            dist_coeffs = str(dist_coeffs)
+            return jsonify({"code": 1, "msg": "成功获取内参数", "data": [k_cam, dist_coeffs]})
+        except:
+            return jsonify({"code": -1, "msg": "获取内参数失败", "data": False})
+    else:
+        return jsonify({"code": -1, "msg": "照片数量不足", "data": False})
+
+
 if __name__ == '__main__':
+    # 上传分享文件的目录
     if not os.path.exists(upload_files_save_path):
         os.mkdir(upload_files_save_path)
     if not os.path.exists(upload_encrypted_files_save_path):
         os.mkdir(upload_encrypted_files_save_path)
+
+    # 上传矫正摄像机照片的目录
+    if not os.path.exists(upload_calibrate_camera_save_path):
+        os.mkdir(upload_calibrate_camera_save_path)
+
+    clean_files()
 
     scheduler.init_app(app)
     scheduler.start()

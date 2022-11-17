@@ -73,7 +73,7 @@ def get_random_string(size):
 
 class Serial:
     def __init__(self):
-        self.users = ["xco2"]
+        self.users = ["xco2"]  # 用户名最多6位
         self.keys = ["qwerfghj"]
         self.creat_serial_key = get_random_string(16)
 
@@ -116,37 +116,41 @@ class Serial:
                  超时返回-1
                  合法返回文件id
         """
-        user, en_ser = en_ser.split("_")
-        user = user.split("-")[-1]
+        user, en_ser = en_ser.split("_")  # 分割出授权者名称
+        user = user.split("-")[-1]  # 去除授权者名称前导
         if user not in self.users:
             return None, None
         key = self.keys[self.users.index(user)]
 
-        # 解密
-        en_ser = en_ser.encode("utf-8")
-        data = decode(en_ser, key)
-        data = decode(data, self.creat_serial_key)
-        data = data.decode("utf-8")
+        try:
+            # 解密
+            en_ser = en_ser.encode("utf-8")
+            data = decode(en_ser, key)
+            data = decode(data, self.creat_serial_key)
+            data = data.decode("utf-8")
 
-        # 切割
-        t = int(data[:10])
-        v_t = data[10:13]  # 有效时间,3位数,第一位为模式,0代表分钟为单位,1代表小时为单位,2代表天为单位,其余一律按秒算
-        if v_t[0] == "0":  # 分钟
-            v_t = int(v_t[1:]) * 60
-        elif v_t[0] == "1":  # 小时
-            v_t = int(v_t[1:]) * 3600
-        elif v_t[0] == "2":  # 天
-            v_t = int(v_t[1:]) * 3600 * 24
-        else:  # 其余一律按秒算
-            v_t = int(v_t[1:])
-        file_id = int(data[13:])
-        logger.info("解密后{0}".format(data))
-        # 判断是否超时
-        logger.info("有效时间{0}s".format(v_t))
-        if time.time() > t + v_t:
-            return -1, user
-        else:
-            return file_id, user
+            # 切割
+            t = int(data[:10])
+            v_t = data[10:13]  # 有效时间,3位数,第一位为模式,0代表分钟为单位,1代表小时为单位,2代表天为单位,其余一律按秒算
+            if v_t[0] == "0":  # 分钟
+                v_t = int(v_t[1:]) * 60
+            elif v_t[0] == "1":  # 小时
+                v_t = int(v_t[1:]) * 3600
+            elif v_t[0] == "2":  # 天
+                v_t = int(v_t[1:]) * 3600 * 24
+            else:  # 其余一律按秒算
+                v_t = int(v_t[1:])
+            file_id = int(data[13:])
+            logger.info("解密后{0}".format(data))
+            # 判断是否超时
+            logger.info("有效时间{0}s".format(v_t))
+            if time.time() > t + v_t:
+                return -1, user
+            else:
+                return file_id, user
+        except:
+            logger.info("解密错误")
+            return None, None
 
     # 验证通过后,把文件id与授权者的映射存入数据库,保存的文件由文件id+时间戳命名,
     # 文件保存一段时间后删除,若没有已文件id开头的文件了,就删除数据库中的映射
