@@ -42,7 +42,6 @@
 </template>
 
 <script lang="ts" setup>
-  import { h } from 'vue'
   import img from '@/assets/1.png'
 
   import { frontSchedulingEnterView } from './frontScheduling'
