@@ -32,17 +32,7 @@
         }"
         class="terminal"
       >
-        <Preview
-          :preview="
-            h(
-              Demo,
-              { text: item.text },
-              {
-                default: () => h('span', null, item.text),
-              },
-            )
-          "
-        />
+        <Preview :preview="Demo" />
       </div>
 
       <!-- </Terminal> -->
