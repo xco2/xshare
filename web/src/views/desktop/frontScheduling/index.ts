@@ -5,8 +5,8 @@ export function frontSchedulingEnterView(
   onSuccess?: (top: number) => void,
 ) {
   const containerCenter = getDOMCenter(container)
-  const top = getElementTop(target)
-  const left = getElementLeft(target)
+  const top = getElementTop(target) - target.clientHeight / 4
+  const left = getElementLeft(target) - target.clientWidth / 2
 
   const scalecha = scaleNum - 4
   const top_ =
@@ -25,8 +25,7 @@ export function frontSchedulingEnterView(
   let targetScale = 1
 
   const hz = 60
-  const runTime = 0.45
-
+  const runTime = 0.5
   const distanceSecond = distance / (hz * runTime)
   const distanceOpacity = 1 / (hz * runTime)
   const distanceRotateY = 60 / (hz * runTime)
@@ -37,27 +36,31 @@ export function frontSchedulingEnterView(
   const stepRotateY = distanceRotateY
   const scale = distanceScale
 
-  const runPathFn = (x: number) => {
+  const fn = (x: number) => {
     const y = k * (x - left_) + top_
-    target.style.top = `${y}px`
-    target.style.left = `${x}px`
-    targetX += stepX
-    targetRotateY -= stepRotateY
-    targetScale += scale
+    return y
+  }
 
-    if (targetOpacity <= 1) {
-      targetOpacity += stepOpacity
-      target.style.opacity = `${targetOpacity > 1 ? 1 : targetOpacity}`
-    }
-    if (targetRotateY > 0 || scale <= scaleNum) {
-      const realscale = targetScale > scaleNum ? scaleNum : targetScale
-      target.style.transform = `rotate3d(0,1,0,${
-        targetRotateY < 0 ? 0 : targetRotateY
-      }deg) scale3d(${realscale},${realscale},${realscale})`
-    }
+  const runPathFn = (x: number) => {
+    if (targetX <= left_) {
+      targetRotateY -= stepRotateY
+      targetScale += scale
 
-    if (targetX <= left_) requestAnimationFrame(() => runPathFn(targetX))
-    else {
+      if (targetOpacity <= 1) {
+        targetOpacity += stepOpacity
+        target.style.opacity = `${targetOpacity > 1 ? 1 : targetOpacity}`
+      }
+      if (targetRotateY > 0 || scale <= scaleNum) {
+        const realscale = targetScale > scaleNum ? scaleNum : targetScale
+        target.style.transform = `rotate3d(0,1,0,${
+          targetRotateY < 0 ? 0 : targetRotateY
+        }deg) scale3d(${realscale},${realscale},${realscale})`
+      }
+      target.style.top = `${fn(x)}px`
+      target.style.left = `${x}px`
+      targetX += stepX
+      requestAnimationFrame(() => runPathFn(targetX))
+    } else {
       target.style.opacity = '1'
       target.style.transform = `rotate3d(0,1,0,0deg) scale(${scaleNum})`
       onSuccess?.(top_)

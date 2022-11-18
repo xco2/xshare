@@ -67,7 +67,7 @@
         key: 0,
         view: img,
         active: false,
-        text: '# 我是1',
+        text: '我是1',
       },
       {
         key: 1,
@@ -106,10 +106,6 @@
   })
 
   const zoomValue = computed(() => 1 / scaleNum.value)
-
-  watchEffect(() => {
-    console.log(scaleNumAdd.value)
-  })
 
   const returnList = () => {
     const target: HTMLDivElement = figureRefs.value[activeKey.value]
