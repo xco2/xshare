@@ -17,6 +17,10 @@
           <home-outlined />
           <span>首页</span>
         </a-menu-item>
+        <a-menu-item key="/desktop">
+          <desktop-outlined />
+          <span>调度</span>
+        </a-menu-item>
         <a-menu-item key="/upload">
           <cloud-upload-outlined />
           <span>上传</span>
@@ -25,6 +29,11 @@
         <a-menu-item key="/app-warehouse">
           <appstore-outlined />
           <span>资源库</span>
+        </a-menu-item>
+
+        <a-menu-item key="/code-area">
+          <bulb-outlined />
+          <span>码场</span>
         </a-menu-item>
       </a-menu>
     </a-layout-sider>
@@ -44,7 +53,13 @@
 </template>
 
 <script lang="ts" setup>
-  import { AppstoreOutlined, HomeOutlined, CloudUploadOutlined } from '@ant-design/icons-vue'
+  import {
+    AppstoreOutlined,
+    HomeOutlined,
+    CloudUploadOutlined,
+    BulbOutlined,
+    DesktopOutlined,
+  } from '@ant-design/icons-vue'
   // import { MenuClickEventHandler } from 'ant-design-vue/es/menu/src/interface'
   import { useDarkMode, useWinResize } from 'vue-hooks-plus'
 
@@ -55,6 +70,10 @@
   const selectedKeys = ref(['/home'])
 
   const [darkMode, setDarkMode] = useDarkMode()
+
+  watchEffect(() => {
+    console.log(darkMode.value)
+  })
 
   provide('darkMode', [darkMode, setDarkMode])
 

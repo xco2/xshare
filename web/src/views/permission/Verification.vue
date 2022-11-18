@@ -1,7 +1,8 @@
 <template>
   <PageContainer>
-    <Card title="请输入验证码">
+    <Card title="请输入验证码" class="container">
       <a-textarea v-model:value="password" placeholder="请输入验证码" :rows="4" />
+      <a-divider />
       <div class="submit" @click="onSubmit()">
         <a-button type="primary" size="large" style="width: 20vw">验证</a-button>
       </div>

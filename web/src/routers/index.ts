@@ -24,6 +24,16 @@ const routers = createRouter({
       path: '/app-warehouse',
       component: () => import('@/views/app-warehouse/index.vue'),
     },
+    {
+      name: 'code-area',
+      path: '/code-area',
+      component: () => import('@/views/code-area/index.vue'),
+    },
+    {
+      name: 'desktop',
+      path: '/desktop',
+      component: () => import('@/views/desktop/index.vue'),
+    },
   ],
 })
 

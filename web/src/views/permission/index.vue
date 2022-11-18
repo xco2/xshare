@@ -46,9 +46,9 @@
   import { useHomeStore } from '@/store/modules/home'
 
   const status = {
-    0: '需要进行一段验证',
-    1: '请输入验证码进行验证',
-    2: '验证成功',
+    0: '未授权，需验证',
+    1: '输入验证码',
+    2: '在线',
   }
 
   const colorStatus = {
