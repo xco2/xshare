@@ -20,10 +20,10 @@
     >
       <div
         :style="{
-          width: '100%',
-          height: '100%',
+          width: `${scaleNum * 100}%`,
+          height: `${scaleNum * 100}%`,
           overflow: 'scroll',
-          transform: `scale(${zoomValue})`,
+          transform: `scale3d(${zoomValue},${zoomValue},${zoomValue})`,
           position: 'absolute',
           padding: '24px',
           paddingTop: `${30 + scaleNumAdd * 20}px`,
@@ -32,7 +32,17 @@
         }"
         class="terminal"
       >
-        <Preview :text="item.text" />
+        <Preview
+          :preview="
+            h(
+              Demo,
+              { text: item.text },
+              {
+                default: () => h('span', null, item.text),
+              },
+            )
+          "
+        />
       </div>
 
       <!-- </Terminal> -->
@@ -42,10 +52,12 @@
 </template>
 
 <script lang="ts" setup>
+  import { h } from 'vue'
   import img from '@/assets/1.png'
 
   import { frontSchedulingEnterView } from './frontScheduling'
   import Preview from './Preview.vue'
+  import Demo from './Demo.vue'
 
   const containerRef = ref()
 
@@ -176,6 +188,7 @@
       border-radius: 4px;
       overflow: hidden;
       filter: grayscale(50%);
+      // transform: translate3d(0, 0, 0);
     }
 
     .small-figure:hover {
@@ -194,6 +207,7 @@
     width: 100%;
     max-width: 100%;
     overflow: scroll;
+    transform: translateZ(0) translate3d(0, 0, 0);
     // padding-bottom: 0;
     // margin-bottom: 32px;
   }

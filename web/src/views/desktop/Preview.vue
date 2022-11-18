@@ -1,23 +1,6 @@
 <template>
   <div>
     <div ref="container"></div>
-    <div style="font-size: 16px">6767</div>
-    <div style="font-size: 16px">6767</div>
-    <div style="font-size: 16px">6767</div>
-
-    <div style="font-size: 16px">6767</div>
-
-    <div style="font-size: 16px">6767</div>
-
-    <div style="font-size: 16px">6767</div>
-
-    <div style="font-size: 16px">6767</div>
-    <div style="font-size: 16px">6767</div>
-    <div style="font-size: 16px">6767</div>
-    <div style="font-size: 16px">6767</div>
-    <div style="font-size: 16px">6767</div>
-    <div style="font-size: 16px">6767</div>
-    <div style="font-size: 16px">6767</div>
   </div>
 </template>
 
@@ -25,11 +8,15 @@
   import { usePreview } from 'vue-hooks-plus'
 
   const props = defineProps<{
-    text: any
+    preview: any
   }>()
-  const textRef = computed(() => props.text)
+  const previewRef = computed(() => props.preview)
 
-  const { container } = usePreview(textRef)
+  const { container } = usePreview(previewRef)
+
+  watchEffect(() => {
+    console.log(props.preview)
+  })
 </script>
 
 <style scoped lang="less"></style>
