@@ -1,6 +1,7 @@
 <template>
   <div>
     <div ref="container"></div>
+    <div style="font-size: 16px">6767</div>
   </div>
 </template>
 
@@ -10,8 +11,9 @@
   const props = defineProps<{
     text: any
   }>()
+  const textRef = computed(() => props.text)
 
-  const { container } = usePreview(props.text)
+  const { container } = usePreview(textRef)
 </script>
 
 <style scoped lang="less"></style>

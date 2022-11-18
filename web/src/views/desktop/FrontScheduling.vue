@@ -22,11 +22,13 @@
         :style="{
           width: '100%',
           height: '100%',
-          zoom: zoomValue + scaleNumAdd,
           overflow: 'scroll',
+          transform: `scale(${zoomValue})`,
+          position: 'absolute',
           padding: '24px',
           paddingTop: `${30 + scaleNumAdd * 20}px`,
           paddingLeft: `8px`,
+          transformOrigin: 'top left',
         }"
         class="terminal"
       >
@@ -65,7 +67,7 @@
         key: 0,
         view: img,
         active: false,
-        text: '我是1',
+        text: '# 我是1',
       },
       {
         key: 1,
@@ -165,7 +167,7 @@
     height: 90%;
     position: absolute;
     perspective: 1500px;
-    perspective-origin: center center;
+    // perspective-origin: center center;
 
     .small-figure {
       position: absolute;
@@ -175,7 +177,7 @@
       // transition: all 0.3s;
       opacity: 0.6;
       transform: rotate3d(0, 1, 0, 60deg);
-      // border-radius: 8px;
+      border-radius: 4px;
       overflow: hidden;
       filter: grayscale(50%);
     }
@@ -215,8 +217,8 @@
   }
 
   .close {
-    width: 32px;
-    height: 32px;
+    width: 12px;
+    height: 12px;
     background: #f95c5b;
     border-radius: 100%;
   }

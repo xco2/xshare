@@ -25,7 +25,7 @@ export function frontSchedulingEnterView(
   let targetScale = 1
 
   const hz = 60
-  const runTime = 0.25
+  const runTime = 0.45
 
   const distanceSecond = distance / (hz * runTime)
   const distanceOpacity = 1 / (hz * runTime)
