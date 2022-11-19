@@ -1,48 +1,57 @@
 <template>
-  <div class="container" ref="containerRef">
-    <div
-      class="small-figure"
-      v-for="item in images"
-      :key="item.key"
-      :style="{
-        // background: `url(${item.view})`,
-        backgroundColor: '#fff',
-        backgroundSize: 'cover',
-        top: `${item.top}px`,
-        filter: item.active ? 'none' : 'grayscale(50%)',
-      }"
-      :ref="
-        (ref) => {
-          setFigureRefs(ref)
-        }
-      "
-      @click="() => (item.active ? null : handleClick(item.key))"
-    >
+  <div class="wrapper">
+    <div class="container" ref="containerRef">
       <div
+        class="small-figure"
+        v-for="item in images"
+        :key="item.key"
         :style="{
-          width: `${scaleNum * 100}%`,
-          height: `${scaleNum * 100}%`,
-          overflow: 'scroll',
-          transform: `scale3d(${zoomValue},${zoomValue},${zoomValue})`,
-          position: 'absolute',
-          padding: '24px',
-          paddingTop: `${30 + scaleNumAdd * 20}px`,
-          paddingLeft: `8px`,
-          transformOrigin: 'top left',
+          // background: `url(${item.view})`,
+          // backgroundColor: '#fff',
+          backgroundSize: 'cover',
+          top: `${item.top}px`,
+          filter: item.active ? 'none' : 'grayscale(50%)',
+          opacity: item.active ? 1 : 0.6,
         }"
-        class="terminal"
+        :ref="
+          (ref) => {
+            setFigureRefs(ref)
+          }
+        "
+        @click="() => (item.active ? null : handleClick(item.key))"
       >
-        <Preview :preview="Demo" />
-      </div>
+        <div
+          :style="{
+            width: `${scaleNum * 100}%`,
+            height: `${scaleNum * 100}%`,
+            overflow: 'scroll',
+            transform: `scale3d(${zoomValue},${zoomValue},${zoomValue})`,
+            position: 'absolute',
+            padding: '24px',
+            paddingTop: `${30 + scaleNumAdd * 20}px`,
+            paddingLeft: `8px`,
+            transformOrigin: 'top left',
+          }"
+          class="terminal"
+        >
+          <Preview :preview="Demo" />
+        </div>
 
-      <!-- </Terminal> -->
+        <!-- </Terminal> -->
+      </div>
+    </div>
+    <div class="bar">
+      <div><apple-filled /></div>
+      <div><github-filled /></div>
+      <div><chrome-filled /></div>
     </div>
   </div>
-  <div class="bar">台前调度</div>
 </template>
 
 <script lang="ts" setup>
   import img from '@/assets/1.png'
+
+  import { AppleFilled, GithubFilled, ChromeFilled } from '@ant-design/icons-vue'
 
   import { frontSchedulingEnterView } from './frontScheduling'
   import Preview from './Preview.vue'
@@ -102,7 +111,6 @@
 
   onMounted(() => {
     scaleNum.value = (window.screen.availWidth * 5.3) / 1920
-
     scaleNumAdd.value = (window.screen.availWidth * 0.08) / 1920
   })
 
@@ -133,6 +141,7 @@
     }
     activeKey.value = key
     const targetTop = images.value.find((item) => item.key === key)!.top
+
     frontSchedulingEnterView(containerRef.value, figureRefs.value[key], scaleNum.value, (top) => {
       images.value = images.value.map((item) => {
         if (item.top < targetTop)
@@ -155,28 +164,50 @@
       })
     })
   }
-  // Small figure
+
+  // const appClick = (type: string) => {
+  //   images.value.push({
+  //     key: 4,
+  //     view: img,
+  //     active: false,
+  //     text: '我是5',
+  //     top: images.value.length * (100 + 24) + 24,
+  //   })
+  // }
 </script>
 
 <style scoped lang="less">
+  .wrapper {
+    width: 100%;
+    height: 100%;
+    background: url('../../assets/bg.jpeg') no-repeat;
+    background-size: cover;
+    color: var(--xshare-font-color);
+    position: relative;
+  }
   .container {
     width: 100%;
-    height: 90%;
+    height: calc(100% - 1% - 49px - 2px);
     position: absolute;
     perspective: 1500px;
-    // perspective-origin: center center;
+    opacity: 1;
+    // background-color: var(--xshare-page-background);
+
+    perspective-origin: 60% 50%;
 
     .small-figure {
       position: absolute;
       left: 0;
       height: 100px;
       width: 180px;
+      background-color: var(--xshare-layout-sider-color);
       // transition: all 0.3s;
       opacity: 0.6;
       transform: rotate3d(0, 1, 0, 60deg);
       border-radius: 4px;
       overflow: hidden;
       filter: grayscale(50%);
+      transition: all 0.2s;
       // transform: translate3d(0, 0, 0);
     }
 
@@ -224,7 +255,35 @@
 
   .bar {
     position: absolute;
-    width: 100%;
-    bottom: 10%;
+    // width: 90%;
+    bottom: 1%;
+    height: 49px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    border: 1px solid rgba(182, 202, 230, 0.35);
+    backdrop-filter: blur(20px);
+    display: flex;
+    align-items: center;
+    padding-right: 24px;
+    font-size: 32px;
+    justify-content: center;
+    padding-left: 24px;
+
+    div {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.2s;
+      color: var(--xshare-font-color);
+    }
+    div:hover {
+      transform: scale3d(1.15, 1.15, 1.15);
+    }
+
+    & > div:nth-child(n + 2) {
+      margin-left: 12px;
+    }
   }
 </style>
