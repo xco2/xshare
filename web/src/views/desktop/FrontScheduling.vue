@@ -18,7 +18,7 @@
             setFigureRefs(ref)
           }
         "
-        @click="() => (item.active ? null : handleClick(item.key))"
+        @click="() => (item.active ? null : clock && handleClick(item.key))"
       >
         <div
           :style="{
@@ -34,7 +34,7 @@
           }"
           class="terminal"
         >
-          <Preview :preview="Demo" />
+          <Preview :preview="item.text" />
         </div>
 
         <!-- </Terminal> -->
@@ -55,7 +55,7 @@
 
   import { frontSchedulingEnterView } from './frontScheduling'
   import Preview from './Preview.vue'
-  import Demo from './Demo.vue'
+  import { useBoolean, useTimeout } from 'vue-hooks-plus'
 
   const containerRef = ref()
 
@@ -66,6 +66,8 @@
   const scaleNum = ref(5)
 
   const scaleNumAdd = ref(0)
+
+  const [clock, { setTrue }] = useBoolean(false)
 
   const setFigureRefs = (el: any) => {
     if (el) figureRefs.value.push(el)
@@ -114,52 +116,40 @@
     scaleNumAdd.value = (window.screen.availWidth * 0.08) / 1920
   })
 
+  useTimeout(() => {
+    handleClick(0)
+    setTrue()
+  }, 1000)
+
   const zoomValue = computed(() => 1 / scaleNum.value)
 
-  const returnList = () => {
-    const target: HTMLDivElement = figureRefs.value[activeKey.value]
-    const top = (images.value.length - 1) * (100 + 24) + 24
-    target.style.transform = 'rotate3d(0,1,0,60deg) scale3d(1,1,1)'
-    target.style.top = `${top}px`
-    target.style.left = `0px`
-    images.value = images.value?.map((item) => {
-      if (item.key === activeKey.value) {
-        return {
-          ...item,
-          top,
-          active: false,
-        }
-      }
-      return item
-    })
+  const returnList = (index: number, top: number) => {
+    figureRefs.value[activeKey.value].style.transform = 'rotate3d(0,1,0,60deg) scale3d(1,1,1)'
+    figureRefs.value[activeKey.value].style.top = `${top}px`
+    figureRefs.value[activeKey.value].style.left = `0px`
+    figureRefs.value[activeKey.value].style.opacity = `0.6`
+    images.value[index].top = top
   }
 
   const handleClick = (key: number) => {
-    const activeTarget = images.value.find((i) => i.active === true)
-    if (activeTarget) {
-      returnList()
+    const activeTargetIndex = images.value.findIndex((i) => i.active === true)
+    const replaceTarget = images.value.find((i) => i.key === key)
+
+    if (activeTargetIndex !== -1) {
+      returnList(activeTargetIndex, replaceTarget?.top)
     }
     activeKey.value = key
-    const targetTop = images.value.find((item) => item.key === key)!.top
-
     frontSchedulingEnterView(containerRef.value, figureRefs.value[key], scaleNum.value, (top) => {
       images.value = images.value.map((item) => {
-        if (item.top < targetTop)
+        if (item.key === key)
           return {
             ...item,
-            active: false,
+            active: true,
+            top,
           }
-        if (item.top > targetTop)
-          return {
-            ...item,
-            active: false,
-            top: item.top - (100 + 24),
-          }
-
         return {
           ...item,
-          active: true,
-          top,
+          active: false,
         }
       })
     })

@@ -13,10 +13,6 @@
   const previewRef = computed(() => props.preview)
 
   const { container } = usePreview(previewRef)
-
-  watchEffect(() => {
-    console.log(props.preview)
-  })
 </script>
 
 <style scoped lang="less"></style>
