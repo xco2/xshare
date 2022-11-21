@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <div ref="container"></div>
+  <div style="width: 100%">
+    <div ref="container" style="width: 100%"></div>
   </div>
 </template>
 
@@ -15,4 +15,9 @@
   const { container } = usePreview(previewRef)
 </script>
 
-<style scoped lang="less"></style>
+<style scoped lang="less">
+  iframe {
+    width: 100%;
+    height: 100%;
+  }
+</style>

@@ -35,9 +35,12 @@
 
   const { run, loading } = useRequest(validateUploadCode, {
     manual: true,
-    onSuccess: () => {
-      setVerification(true)
-      setKey(password.value)
+    onSuccess: (data) => {
+      if (data) {
+        setVerification(true)
+        setKey(password.value)
+        homeStore.setPermissionAccess(true)
+      }
     },
   })
 

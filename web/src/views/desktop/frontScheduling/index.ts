@@ -70,6 +70,30 @@ export function frontSchedulingEnterView(
   runPathFn(targetX)
 }
 
+export function frontSchedulingTransformEnterView(
+  container: HTMLDivElement,
+  target: HTMLDivElement,
+  scaleNum = 4,
+  time = 0.3,
+  onSuccess?: (top: number) => void,
+) {
+  const containerCenter = getDOMCenter(container)
+  const scalecha = scaleNum - 4
+  const top_ =
+    containerCenter.top -
+    (target.clientHeight * (4 / 2)) / 2 +
+    (target.clientHeight * (scalecha / 2)) / 2
+  const left_ =
+    containerCenter.left - (target.clientWidth * (4 / 2)) / 2 + target.clientWidth * (scalecha / 2)
+
+  target.style.transition = `all ${time}s`
+  target.style.transform = `rotate3d(0,1,0,0deg) scale3d(${scaleNum},${scaleNum},${scaleNum})`
+  target.style.top = `${top_}px`
+  target.style.left = `${left_}px`
+  target.style.opacity = `1`
+  onSuccess?.(top_)
+}
+
 export function getDOMCenter(target: HTMLDivElement) {
   const rect = target.getBoundingClientRect()
   //中心位置

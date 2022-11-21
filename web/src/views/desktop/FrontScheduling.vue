@@ -6,19 +6,16 @@
         v-for="item in images"
         :key="item.key"
         :style="{
-          // background: `url(${item.view})`,
-          // backgroundColor: '#fff',
           backgroundSize: 'cover',
           top: `${item.top}px`,
           filter: item.active ? 'none' : 'grayscale(50%)',
-          opacity: item.active ? 1 : 0.6,
         }"
         :ref="
           (ref) => {
             setFigureRefs(ref)
           }
         "
-        @click="() => (item.active ? null : clock && handleClick(item.key))"
+        @click="() => (item.active ? null : handleClick(item.key))"
       >
         <div
           :style="{
@@ -37,7 +34,22 @@
           <Preview :preview="item.text" />
         </div>
 
-        <!-- </Terminal> -->
+        <div
+          v-if="item.active === false"
+          class="mask"
+          :style="{
+            width: `100%`,
+            height: `100%`,
+            overflow: 'hidden',
+            position: 'absolute',
+            padding: '24px',
+            paddingTop: `${30 + scaleNumAdd * 20}px`,
+            paddingLeft: `8px`,
+            transformOrigin: 'top left',
+            zIndex: 999,
+          }"
+        >
+        </div>
       </div>
     </div>
     <div class="bar">
@@ -50,24 +62,17 @@
 
 <script lang="ts" setup>
   import img from '@/assets/1.png'
-
   import { AppleFilled, GithubFilled, ChromeFilled } from '@ant-design/icons-vue'
-
-  import { frontSchedulingEnterView } from './frontScheduling'
+  import AppWarehouse from '../app-warehouse/index.vue'
+  import UserUpload from '../user-upload/index.vue'
+  import { frontSchedulingTransformEnterView } from './frontScheduling'
   import Preview from './Preview.vue'
-  import { useBoolean, useTimeout } from 'vue-hooks-plus'
 
   const containerRef = ref()
-
   const figureRefs = ref<any[]>([])
-
   const activeKey = ref(0)
-
   const scaleNum = ref(5)
-
   const scaleNumAdd = ref(0)
-
-  const [clock, { setTrue }] = useBoolean(false)
 
   const setFigureRefs = (el: any) => {
     if (el) figureRefs.value.push(el)
@@ -79,31 +84,31 @@
         key: 0,
         view: img,
         active: false,
-        text: '我是1',
+        text: '<iframe style="width:100%;height:400px" src="http://43.138.187.142:13000/" frameborder="0"></iframe>',
       },
       {
         key: 1,
         view: img,
         active: false,
-        text: '我是2',
+        text: AppWarehouse,
       },
       {
         key: 2,
         view: img,
         active: false,
-        text: '我是3',
+        text: UserUpload,
       },
       {
         key: 3,
         view: img,
         active: false,
-        text: '我是4',
+        text: AppWarehouse,
       },
       {
         key: 4,
         view: img,
         active: false,
-        text: '我是5',
+        text: '我是hhh',
       },
     ]?.map((item, index) => ({
       ...item,
@@ -112,22 +117,18 @@
   )
 
   onMounted(() => {
-    scaleNum.value = (window.screen.availWidth * 5.3) / 1920
+    scaleNum.value = (window.screen.availWidth * 6) / 1920
     scaleNumAdd.value = (window.screen.availWidth * 0.08) / 1920
-  })
 
-  useTimeout(() => {
     handleClick(0)
-    setTrue()
-  }, 1000)
+  })
 
   const zoomValue = computed(() => 1 / scaleNum.value)
 
   const returnList = (index: number, top: number) => {
-    figureRefs.value[activeKey.value].style.transform = 'rotate3d(0,1,0,60deg) scale3d(1,1,1)'
+    figureRefs.value[activeKey.value].style.transform = 'rotate3d(0,1,0,65deg) scale3d(1,1,1)'
     figureRefs.value[activeKey.value].style.top = `${top}px`
     figureRefs.value[activeKey.value].style.left = `0px`
-    figureRefs.value[activeKey.value].style.opacity = `0.6`
     images.value[index].top = top
   }
 
@@ -136,34 +137,31 @@
     const replaceTarget = images.value.find((i) => i.key === key)
 
     if (activeTargetIndex !== -1) {
+      // @ts-ignore
       returnList(activeTargetIndex, replaceTarget?.top)
     }
     activeKey.value = key
-    frontSchedulingEnterView(containerRef.value, figureRefs.value[key], scaleNum.value, (top) => {
-      images.value = images.value.map((item) => {
-        if (item.key === key)
+    frontSchedulingTransformEnterView(
+      containerRef.value,
+      figureRefs.value[key],
+      scaleNum.value,
+      0.35,
+      (top) => {
+        images.value = images.value.map((item) => {
+          if (item.key === key)
+            return {
+              ...item,
+              active: true,
+              top,
+            }
           return {
             ...item,
-            active: true,
-            top,
+            active: false,
           }
-        return {
-          ...item,
-          active: false,
-        }
-      })
-    })
+        })
+      },
+    )
   }
-
-  // const appClick = (type: string) => {
-  //   images.value.push({
-  //     key: 4,
-  //     view: img,
-  //     active: false,
-  //     text: '我是5',
-  //     top: images.value.length * (100 + 24) + 24,
-  //   })
-  // }
 </script>
 
 <style scoped lang="less">
@@ -181,28 +179,22 @@
     position: absolute;
     perspective: 1500px;
     opacity: 1;
-    // background-color: var(--xshare-page-background);
-
     perspective-origin: 60% 50%;
 
     .small-figure {
+      transition-timing-function: ease;
       position: absolute;
       left: 0;
       height: 100px;
       width: 180px;
       background-color: var(--xshare-layout-sider-color);
-      // transition: all 0.3s;
-      opacity: 0.6;
-      transform: rotate3d(0, 1, 0, 60deg);
+      transform: rotate3d(0, 1, 0, 65deg);
       border-radius: 4px;
       overflow: hidden;
-      filter: grayscale(50%);
-      transition: all 0.2s;
-      // transform: translate3d(0, 0, 0);
     }
 
     .small-figure:hover {
-      transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 1, 0, 60deg);
+      transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 1, 0, 65deg);
       opacity: 1;
       filter: none;
     }
@@ -213,13 +205,9 @@
     line-height: 16px;
     border-radius: 7px;
     position: relative;
-    // box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 0 30px 1px rgba(0, 0, 0, 0.15);
     width: 100%;
-    max-width: 100%;
     overflow: scroll;
     transform: translateZ(0) translate3d(0, 0, 0);
-    // padding-bottom: 0;
-    // margin-bottom: 32px;
   }
 
   .terminal::after {
@@ -241,6 +229,19 @@
     height: 12px;
     background: #f95c5b;
     border-radius: 100%;
+  }
+
+  .mask {
+    opacity: 0.6;
+    background-color: #efefef;
+    filter: grayscale(50%);
+    cursor: pointer;
+  }
+
+  .mask:hover {
+    opacity: 0;
+    // transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 1, 0, 65deg);
+    filter: none;
   }
 
   .bar {

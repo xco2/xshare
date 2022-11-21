@@ -17,10 +17,10 @@
           <home-outlined />
           <span>首页</span>
         </a-menu-item>
-        <a-menu-item key="/desktop">
+        <!-- <a-menu-item key="/desktop">
           <desktop-outlined />
           <span>调度</span>
-        </a-menu-item>
+        </a-menu-item> -->
         <a-menu-item key="/upload">
           <cloud-upload-outlined />
           <span>上传</span>
@@ -58,7 +58,7 @@
     HomeOutlined,
     CloudUploadOutlined,
     BulbOutlined,
-    DesktopOutlined,
+    // DesktopOutlined,
   } from '@ant-design/icons-vue'
   // import { MenuClickEventHandler } from 'ant-design-vue/es/menu/src/interface'
   import { useDarkMode, useWinResize } from 'vue-hooks-plus'
