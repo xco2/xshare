@@ -329,6 +329,24 @@ def calibrate_camera():
         return jsonify({"code": -1, "msg": "照片数量不足", "data": False})
 
 
+# ======================视频流=========================
+@app.route('/video_feed')
+def video_feed():
+    """Video streaming route. Put this in the src attribute of an img tag."""
+    return Response(gen(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
+
+def gen():
+    yield b'--frame\r\n'
+    index = 0
+    while True:
+        frame = open("video_imgs/" + str(index) + '.png', 'rb').read()
+        time.sleep(0.2)
+        index = (index + 1) % 300
+        yield b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n--frame\r\n'
+
+
 if __name__ == '__main__':
     # 上传分享文件的目录
     if not os.path.exists(upload_files_save_path):
