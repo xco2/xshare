@@ -26,6 +26,7 @@ export default ({ command, mode }) => {
     },
     build: {
       target: 'es2015',
+      minify: 'terser',
       terserOptions: {
         compress: {
           keep_infinity: true,
