@@ -1,5 +1,5 @@
 import numpy as np
-from flask import Flask, request, render_template, session, jsonify, Response
+from flask import Flask, request, render_template, session, jsonify, Response, make_response
 from flask_apscheduler import APScheduler
 from Serial import Serial, encode, decode
 import cv2
@@ -8,6 +8,7 @@ from PIL import Image
 from loguru import logger
 from flask_cors import CORS
 from calibrate_camera import *
+import datetime
 
 # 43.138.187.142
 server_ip = "0.0.0.0"
@@ -20,6 +21,8 @@ upload_calibrate_camera_save_path = "./calib_camera_imgs"
 # flask
 app = Flask(__name__, static_folder=upload_files_save_path)
 app.config['SECRET_KEY'] = os.urandom(24)
+# app.config['SESSION_PERMANENT'] = True  # 如果设置为True，则关闭浏览器session就失效。
+# app.permanent_session_lifetime = datetime.timedelta(seconds=600)  # 设置session过期时间
 CORS(app, resources={r"/*": {"origins": "*"}})  # 跨域
 
 # 定时任务
@@ -27,6 +30,22 @@ scheduler = APScheduler()
 
 # 加解密模块
 serial_home = Serial()
+
+
+# 没试过不知道能不能解决
+# @app.after_request
+# def af_req(resp):  # 解决跨域session丢失
+#     resp = make_response(resp)
+#     resp.headers['Access-Control-Allow-Origin'] = f'http://{server_ip}:{port}'
+#     resp.headers['Access-Control-Allow-Methods'] = 'PUT,POST,GET,DELETE,OPTIONS'
+#     # resp.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type'
+#     resp.headers[
+#         'Access-Control-Allow-Headers'] = 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With , yourHeaderFeild'
+#     resp.headers['Access-Control-Allow-Credentials'] = 'true'
+#
+#     # resp.headers['X-Powered-By'] = '3.2.1'
+#     # resp.headers['Content-Type'] = 'application/json;charset=utf-8'
+#     return resp
 
 
 # =======================定时清理=======================
@@ -119,30 +138,29 @@ def check_serial():
             serial = request.form['serial']
         if serial is None:
             # return "错误上传码,<a href='/'>返回</a>"
-            return jsonify({"code": -1, "msg": "错误上传码", "data": False})
+            return jsonify({"code": -1, "msg": "错误上传码", "expires": "", "data": False})
 
-        file_id, user = serial_home.check_serial(serial)
+        file_id, user, expires = serial_home.check_serial(serial)
         logger.info(file_id)
 
         if file_id is None:
             if is_json:
-                return jsonify({"code": -1, "msg": "错误上传码", "data": False})
+                return jsonify({"code": -1, "msg": "错误上传码", "expires": "-1", "data": False})
             else:
                 return "错误上传码,<a href='/'>返回</a>"
         elif file_id == -1:
             if is_json:
-                return jsonify({"code": -1, "msg": "上传码已过期", "data": False})
+                return jsonify({"code": -1, "msg": "上传码已过期", "expires": "-1", "data": False})
             else:
                 return "上传码已过期,<a href='/'>返回</a>"
         else:
-            # TODO: 添加授权者与file_id的映射到数据库
-            session['file_id'] = file_id
+            # session['file_id'] = file_id
             if is_json:
-                return jsonify({"code": 1, "msg": "通过验证", "data": True})
+                return jsonify({"code": 1, "msg": "通过验证", "expires": expires, "data": True})
             else:
                 return "<script>window.location = '/'</script>"
     else:
-        return jsonify({"code": -1, "msg": "错误上传码", "data": False})
+        return jsonify({"code": -1, "msg": "错误上传码", "expires": "-1", "data": False})
         # return "错误上传码,<a href='/'>返回</a>"
 
 
@@ -171,34 +189,41 @@ def upload():
     接受前端传送过来的文件,不需要加密
     :return:
     """
-    global upload_files_save_path
-    file_id = session.get('file_id')
-    logger.info(file_id)
-    if file_id is None:
-        return jsonify({"code": -1, "msg": "未输入上传码", "data": False})
+    global upload_files_save_path, serial_home
+    authorization = request.headers.get('XAuthorization')
+    # print(authorization, type(authorization))
+    if authorization is None:
+        return jsonify({"code": -1, "msg": "无授权", "data": False})
         # return "未输入上传码,<a href='/'>返回</a>"
     else:
-        # 获取上传的文件
-        file_objs = request.files.getlist("upload_file")
-        if file_objs is None:
-            return jsonify({"code": -1, "msg": "文件上传为空", "data": False})
-            # return "文件上传为空,<a href='/'>返回</a>"
-        for file_obj in file_objs:
-            file_bytes = file_obj.read()
-            logger.info("文件大小{0}KB".format(len(file_bytes) / 8 / 1024))
-            # if len(file_bytes) > 100 * 1024 * 1024 * 8:  # 文件大小限制,100MB
-            #     return jsonify({"code": -1, "msg": "文件过于100MB", "data": False})
-            # return "文件过于100MB,<a href='/'>返回</a>"
+        file_id, user, expires = serial_home.check_serial(str(authorization))
+        logger.info(file_id)
+        if file_id is None:
+            return jsonify({"code": -1, "msg": "无授权", "data": False})
+        elif file_id == -1:
+            return jsonify({"code": -1, "msg": "授权过期", "data": False})
+        else:
+            # 获取上传的文件
+            file_objs = request.files.getlist("upload_file")
+            if file_objs is None:
+                return jsonify({"code": -1, "msg": "文件上传为空", "data": False})
+                # return "文件上传为空,<a href='/'>返回</a>"
+            for file_obj in file_objs:
+                file_bytes = file_obj.read()
+                logger.info("文件大小{0}M".format(len(file_bytes) / 8 / 1024 / 1024))
+                if len(file_bytes) > 1024 * 1024 * 1024 * 8:  # 文件大小限制,1G
+                    return jsonify({"code": -1, "msg": "文件过于100MB", "data": False})
+                # return "文件过于100MB,<a href='/'>返回</a>"
 
-            file_type = file_obj.filename.split(".")[-1]
-            file_name = str(file_id) + "_" + str(int(time.time())) + "@" + file_obj.filename
-            file_name = os.path.join(upload_files_save_path, file_name)
-            with open(file_name, "wb") as f:
-                f.write(file_bytes)
-            if file_type in ["png", "jpg", "jpeg"]:
-                create_litter_img(file_name)
-        # return "文件上传成功{0},<a href='/'>返回</a>".format(file_id)
-        return jsonify({"code": 1, "msg": "文件上传成功{0}".format(file_id), "data": True})
+                file_type = file_obj.filename.split(".")[-1]
+                file_name = str(file_id) + "_" + str(int(time.time())) + "@" + file_obj.filename
+                file_name = os.path.join(upload_files_save_path, file_name)
+                with open(file_name, "wb") as f:
+                    f.write(file_bytes)
+                if file_type in ["png", "jpg", "jpeg"]:
+                    create_litter_img(file_name)
+            # return "文件上传成功{0},<a href='/'>返回</a>".format(file_id)
+            return jsonify({"code": 1, "msg": "文件上传成功{0}".format(file_id), "data": True})
 
 
 # 上传文件,加密
