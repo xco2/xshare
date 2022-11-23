@@ -73,8 +73,8 @@ def get_random_string(size):
 
 class Serial:
     def __init__(self):
-        self.users = ["xco2"]  # 用户名最多6位
-        self.keys = ["qwerfghj"]
+        self.users = ["xco2", "yonggit"]  # 用户名最多6位
+        self.keys = ["qwerfghj/xco2", "xshare/yonggit"]
         self.creat_serial_key = get_random_string(16)
 
     # 生成上传码,加密前,10位为时间,3位有效时间,5位文件id,加密后,最前面是授权者昵称
@@ -142,13 +142,14 @@ class Serial:
                 v_t = int(v_t[1:])
             file_id = int(data[13:])
             logger.info("解密后{0}".format(data))
+            logger.info("file_id{0}".format(file_id))
             # 判断是否超时
             logger.info("有效时间{0}s".format(v_t))
             if time.time() > t + v_t:
                 return -1, user
             else:
                 return file_id, user
-        except:
+        except Exception as e:
             logger.info("解密错误")
             return None, None
 
