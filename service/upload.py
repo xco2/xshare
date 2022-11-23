@@ -138,30 +138,29 @@ def check_serial():
             serial = request.form['serial']
         if serial is None:
             # return "错误上传码,<a href='/'>返回</a>"
-            return jsonify({"code": -1, "msg": "错误上传码", "data": False})
+            return jsonify({"code": -1, "msg": "错误上传码", "expires": "", "data": False})
 
-        file_id, user = serial_home.check_serial(serial)
+        file_id, user, expires = serial_home.check_serial(serial)
         logger.info(file_id)
 
         if file_id is None:
             if is_json:
-                return jsonify({"code": -1, "msg": "错误上传码", "data": False})
+                return jsonify({"code": -1, "msg": "错误上传码", "expires": "-1", "data": False})
             else:
                 return "错误上传码,<a href='/'>返回</a>"
         elif file_id == -1:
             if is_json:
-                return jsonify({"code": -1, "msg": "上传码已过期", "data": False})
+                return jsonify({"code": -1, "msg": "上传码已过期", "expires": "-1", "data": False})
             else:
                 return "上传码已过期,<a href='/'>返回</a>"
         else:
-            # TODO: 添加授权者与file_id的映射到数据库
-            session['file_id'] = file_id
+            # session['file_id'] = file_id
             if is_json:
-                return jsonify({"code": 1, "msg": "通过验证", "data": True})
+                return jsonify({"code": 1, "msg": "通过验证", "expires": expires, "data": True})
             else:
                 return "<script>window.location = '/'</script>"
     else:
-        return jsonify({"code": -1, "msg": "错误上传码", "data": False})
+        return jsonify({"code": -1, "msg": "错误上传码", "expires": "-1", "data": False})
         # return "错误上传码,<a href='/'>返回</a>"
 
 
@@ -191,13 +190,13 @@ def upload():
     :return:
     """
     global upload_files_save_path, serial_home
-    authorization = request.headers.get('Authorization')
+    authorization = request.headers.get('XAuthorization')
     # print(authorization, type(authorization))
     if authorization is None:
         return jsonify({"code": -1, "msg": "无授权", "data": False})
         # return "未输入上传码,<a href='/'>返回</a>"
     else:
-        file_id, user = serial_home.check_serial(str(authorization))
+        file_id, user, expires = serial_home.check_serial(str(authorization))
         logger.info(file_id)
         if file_id is None:
             return jsonify({"code": -1, "msg": "无授权", "data": False})
