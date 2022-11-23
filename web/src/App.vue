@@ -1,12 +1,7 @@
 <template>
   <a-layout>
     <a-layout-sider class="layout-sider" collapsible v-model:collapsed="collapsed">
-      <!-- <a-row type="flex" justify="center" align="top" style="padding-top: 8px">
-        <a-col>
-          <a-input-search placeholder="input search text" style="width: 150px" />
-        </a-col>
-      </a-row> -->
-      <div style="height: 8px"></div>
+      <!-- <div class="text-sm"> XShare </div> -->
       <a-menu
         mode="inline"
         class="layout-menu"
@@ -14,7 +9,7 @@
         v-model:selectedKeys="selectedKeys"
       >
         <a-menu-item key="/home">
-          <home-outlined />
+          <aliwangwang-filled />
           <span>首页</span>
         </a-menu-item>
         <!-- <a-menu-item key="/desktop">
@@ -22,17 +17,17 @@
           <span>调度</span>
         </a-menu-item> -->
         <a-menu-item key="/upload">
-          <cloud-upload-outlined />
+          <rocket-filled />
           <span>上传</span>
         </a-menu-item>
 
         <a-menu-item key="/app-warehouse">
-          <appstore-outlined />
+          <appstore-filled />
           <span>资源库</span>
         </a-menu-item>
 
         <a-menu-item key="/code-area">
-          <bulb-outlined />
+          <security-scan-filled />
           <span>码场</span>
         </a-menu-item>
       </a-menu>
@@ -54,10 +49,10 @@
 
 <script lang="ts" setup>
   import {
-    AppstoreOutlined,
-    HomeOutlined,
-    CloudUploadOutlined,
-    BulbOutlined,
+    RocketFilled,
+    AliwangwangFilled,
+    AppstoreFilled,
+    SecurityScanFilled,
     // DesktopOutlined,
   } from '@ant-design/icons-vue'
   // import { MenuClickEventHandler } from 'ant-design-vue/es/menu/src/interface'
@@ -101,7 +96,7 @@
     router.push(key)
   }
 </script>
-<style>
+<style lang="less">
   body {
     background-color: var(--xshare-layout-sider-color);
   }
@@ -136,6 +131,18 @@
     background-color: var(--xshare-layout-sider-color);
     color: var(--xshare-layout-sider-font-color);
     border-radius: 1rem 0 0 1rem !important;
+    font-weight: 500;
+    span {
+      position: relative;
+      top: 1x;
+    }
+  }
+  .ant-menu-light .ant-menu-item:hover,
+  .ant-menu-light .ant-menu-item-active,
+  .ant-menu-light .ant-menu:not(.ant-menu-inline) .ant-menu-submenu-open,
+  .ant-menu-light .ant-menu-submenu-active,
+  .ant-menu-light .ant-menu-submenu-title:hover {
+    @apply text-purple-700;
   }
 
   .ant-menu {
@@ -157,7 +164,9 @@
 
   .ant-menu-item-selected {
     background-color: rgba(82, 129, 255, 0.15) !important;
-    border-radius: 1。5rem 0 0 1.5rem !important;
+    border-radius: 1.5rem 0 0 1.5rem !important;
+
+    @apply text-purple-700;
   }
 
   .ant-menu-title-content {
@@ -171,5 +180,7 @@
 
   .ant-layout-sider-trigger {
     color: var(--xshare-layout-sider-font-color);
+    font-size: 18px;
+    opacity: 0.8;
   }
 </style>

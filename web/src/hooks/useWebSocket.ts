@@ -28,13 +28,7 @@ export interface Result {
   webSocketIns?: WebSocket
 }
 
-// function isLatestMessage(target: unknown): target is Result['latestMessage'] {
-//   if (target !== undefined) return true
-//   return false
-// }
-
 /**
- * author：杨杰
  * @param socketUrl socketUrl地址
  * @param options 配置
  * @return  readyState(Connecting = 0,Open = 1,Closing = 2,Closed = 3)
