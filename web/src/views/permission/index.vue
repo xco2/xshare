@@ -90,8 +90,6 @@
   const isAccess = computed(() => homeStore.getPermissionAccess)
 
   watchEffect(() => {
-    console.log(isAccess.value)
-
     if (sessionKey.value && !isAccess.value) {
       homeStore.setPermissionLoading(true)
       run(sessionKey.value)

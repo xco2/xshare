@@ -19,16 +19,16 @@
 
   // @ts-ignore
   const [darkMode, setDarkMode] = inject<any>('darkMode')
-
   const [value, { toggle, set }] = useToggle()
 
   onMounted(() => {
     // @ts-ignore
     set(darkMode.value)
+    setDarkMode?.(localStorage.getItem('dark-mode-enabled')?.includes('true'))
   })
-  watchEffect(() => {
-    // @ts-ignore
-    setDarkMode(value.value)
+
+  watch(value, (v) => {
+    setDarkMode(v)
   })
 
   const handleClick = () => {

@@ -3,14 +3,15 @@ import { VITE_DROP_CONSOLE, VITE_PORT } from './config/constant'
 import { configManualChunk } from './config/vite/optimizer'
 import { createVitePlugins } from './config/vite/plugins'
 
-import { proxy } from './config/vite/proxy'
+// import { proxy } from './config/vite/proxy'
 
 export default ({ command, mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) }
   const isBuild = command === 'build'
-  const env = 'production'
   return defineConfig({
     plugins: createVitePlugins(isBuild),
+    base: '/xshare',
+    // publicDir: '/xshare',
     resolve: {
       alias: [
         { find: /^~/, replacement: '' },

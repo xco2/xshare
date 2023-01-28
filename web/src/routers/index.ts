@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-export const routerHistory = createWebHistory()
+export const routerHistory = createWebHistory('/xshare/')
 
 const routers = createRouter({
   history: routerHistory,

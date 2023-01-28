@@ -40,8 +40,6 @@
     height: 100%;
     line-height: 16px;
     min-height: 480px;
-    padding: 30px;
-    padding-left: 10px;
     border-radius: 7px;
     position: relative;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 0 30px 1px rgba(0, 0, 0, 0.15);

@@ -26,12 +26,19 @@
             position: 'absolute',
             padding: '24px',
             paddingTop: `${30 + scaleNumAdd * 20}px`,
-            paddingLeft: `8px`,
+            paddingLeft: `0px`,
+            paddingRight: `0px`,
+            paddingBottom: 0,
             transformOrigin: 'top left',
           }"
+          :ref="
+            (ref) => {
+              setTerminalRefs(ref)
+            }
+          "
           class="terminal"
         >
-          <Preview :preview="item.text" />
+          <Preview :preview="item.container" />
         </div>
 
         <div
@@ -63,13 +70,12 @@
 <script lang="ts" setup>
   import img from '@/assets/1.png'
   import { AppleFilled, GithubFilled, ChromeFilled } from '@ant-design/icons-vue'
-  import AppWarehouse from '../app-warehouse/index.vue'
-  import UserUpload from '../user-upload/index.vue'
   import { frontSchedulingTransformEnterView } from './frontScheduling'
   import Preview from './Preview.vue'
 
   const containerRef = ref()
   const figureRefs = ref<any[]>([])
+  const terminalRefs = ref<HTMLDivElement[]>([])
   const activeKey = ref(0)
   const scaleNum = ref(5)
   const scaleNumAdd = ref(0)
@@ -78,37 +84,41 @@
     if (el) figureRefs.value.push(el)
   }
 
+  const setTerminalRefs = (el: any) => {
+    if (el) terminalRefs.value.push(el)
+  }
+
   const images = ref(
     [
       {
         key: 0,
         view: img,
         active: false,
-        text: '<iframe style="width:100%;height:400px" src="http://43.138.187.142:13000/" frameborder="0"></iframe>',
+        container: '',
       },
       {
         key: 1,
         view: img,
         active: false,
-        text: AppWarehouse,
+        container: '',
       },
       {
         key: 2,
         view: img,
         active: false,
-        text: UserUpload,
+        container: '',
       },
       {
         key: 3,
         view: img,
         active: false,
-        text: AppWarehouse,
+        container: '',
       },
       {
         key: 4,
         view: img,
         active: false,
-        text: '我是hhh',
+        container: '',
       },
     ]?.map((item, index) => ({
       ...item,
@@ -119,8 +129,13 @@
   onMounted(() => {
     scaleNum.value = (window.screen.availWidth * 6) / 1920
     scaleNumAdd.value = (window.screen.availWidth * 0.08) / 1920
-
     handleClick(0)
+    images.value = images?.value?.map((item) => ({
+      ...item,
+      container: `<iframe style="width:100%;height:${
+        100 * scaleNum.value - 30
+      }px" src="https://inhiblabcore.github.io/docs/hooks/useRequest" frameborder="0"></iframe>`,
+    }))
   })
 
   const zoomValue = computed(() => 1 / scaleNum.value)
@@ -172,6 +187,7 @@
     background-size: cover;
     color: var(--xshare-font-color);
     position: relative;
+    padding: 12px;
   }
   .container {
     width: 100%;

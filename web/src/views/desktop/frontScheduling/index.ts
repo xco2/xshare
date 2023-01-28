@@ -103,8 +103,8 @@ export function getDOMCenter(target: HTMLDivElement) {
   }
   const scrollLeft = document.body.scrollLeft || document.documentElement.scrollLeft
   const scrollTop = document.body.scrollTop || document.documentElement.scrollTop
-  center.left = scrollLeft + center.left
-  center.top = scrollTop + center.top
+  center.left = scrollLeft + center.left - 180 / 2
+  center.top = scrollTop + center.top - 80
 
   return center
 }
